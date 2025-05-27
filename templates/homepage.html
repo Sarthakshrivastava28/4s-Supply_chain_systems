@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supply Chain Management</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #6a11cb, #2575fc); /* Purple-Blue gradient */
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      animation: fadeInUp 1.5s ease-in-out;
+    }
+
+    h1 {
+      font-size: 5rem; /* Bigger heading */
+      margin-bottom: 20px;
+      animation: slideIn 1.2s ease-out;
+    }
+
+    p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      line-height: 1.6;
+      opacity: 0.85;
+      animation: fadeIn 2s ease-in;
+    }
+
+    .btn {
+      background: white;
+      color: #6a11cb;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s ease, color 0.3s ease;
+      animation: fadeIn 2.5s ease-in;
+    }
+
+    .btn:hover {
+      background: #6a11cb;
+      color: white;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 0.85;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Supply Chain Management</h1>
+    <p>
+      Supply Chain Management (SCM) ensures the smooth flow of products, information, and finances across every stage—from supplier to consumer—optimizing efficiency, cost, and quality along the way.
+    </p>
+    <a href="/get-started" class="btn">Get Started</a>
+  </div>
+</body>
+</html>
