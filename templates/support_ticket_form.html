@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Support Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f8fb;
+            padding: 20px;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 15px;
+            background-color: #007BFF;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Create Support Ticket</h2>
+    <form action="/create_ticket" method="POST">
+        <label for="request_id">Request ID</label>
+        <select name="request_id" id="request_id" required>
+            <!-- Dynamically populate with Flask -->
+            <option value="1">Request #1</option>
+            <option value="2">Request #2</option>
+        </select>
+
+        <label for="status">Status</label>
+        <select name="status" id="status" required>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Closed">Closed</option>
+        </select>
+
+        <label for="sentiment">Sentiment</label>
+        <input type="text" name="sentiment" id="sentiment" placeholder="e.g., Happy, Angry">
+
+        <label for="auto_reply">Auto Reply</label>
+        <textarea name="auto_reply" id="auto_reply" rows="3" placeholder="Auto-reply message..."></textarea>
+
+        <label for="priority">Priority</label>
+        <select name="priority" id="priority" required>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+        </select>
+
+        <label for="department">Department</label>
+        <input type="text" name="department" id="department" placeholder="e.g., IT, Sales, Support" required>
+
+        <button type="submit">Submit Ticket</button>
+    </form>
+</div>
+
+</body>
+</html>

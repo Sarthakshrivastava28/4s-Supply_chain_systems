@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raise Request</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-header h1 {
+            color: #333;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .form-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .priority-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .priority-option {
+            position: relative;
+        }
+        
+        .priority-option input[type="radio"] {
+            display: none;
+        }
+        
+        .priority-option label {
+            display: block;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0;
+        }
+        
+        .priority-low input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-color: #28a745;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .priority-medium input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+            border-color: #ffc107;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+        
+        .priority-high input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+            border-color: #dc3545;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .priority-urgent input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            color: white;
+            border-color: #6f42c1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(111, 66, 193, 0.3);
+        }
+        
+        .priority-low label { border-left: 4px solid #28a745; }
+        .priority-medium label { border-left: 4px solid #ffc107; }
+        .priority-high label { border-left: 4px solid #dc3545; }
+        .priority-urgent label { border-left: 4px solid #e83e8c; }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .submit-btn, .back-button {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+        
+        .submit-btn:hover, .back-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:active, .back-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal h2 {
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        
+        .modal-close {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .priority-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1>Raise New Request</h1>
+            <p>Submit your item request with all necessary details</p>
+        </div>
+        
+        <div class="flash-messages">
+            <div id="success-message" class="flash-message flash-success"></div>
+            <div id="error-message" class="flash-message flash-error"></div>
+        </div>
+        
+        <form id="requestForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="customer_id">Customer ID <span class="required">*</span></label>
+                    <input type="text" id="customer_id" name="customer_id" required placeholder="e.g., CUST001">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer_name">Customer Name <span class="required">*</span></label>
+                    <input type="text" id="customer_name" name="customer_name" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="item_name">Item Name <span class="required">*</span></label>
+                    <select id="item_name" name="item_name" required>
+                        <option value="">Select an item...</option>
+                        <option value="Mouse">Mouse</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Scanner">Scanner</option>
+                        <option value="Webcam">Webcam</option>
+                        <option value="Headset">Headset</option>
+                        <option value="Cables">Cables</option>
+                        <option value="Software License">Software License</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Tablet">Tablet</option>
+                        <option value="Docking Station">Docking Station</option>
+                        <option value="Projector">Projector</option>
+                        <option value="UPS">UPS</option>
+                    </select>
+                </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantity">Quantity <span class="required">*</span></label>
+                    <input type="number" id="quantity" name="quantity" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Priority <span class="required">*</span></label>
+                    <div class="priority-group">
+                        <div class="priority-option priority-low">
+                            <input type="radio" id="priority_low" name="priority" value="Low" required>
+                            <label for="priority_low">Low</label>
+                        </div>
+                        <div class="priority-option priority-medium">
+                            <input type="radio" id="priority_medium" name="priority" value="Medium" required>
+                            <label for="priority_medium">Medium</label>
+                        </div>
+                        <div class="priority-option priority-high">
+                            <input type="radio" id="priority_high" name="priority" value="High" required>
+                            <label for="priority_high">High</label>
+                        </div>
+                        <div class="priority-option priority-urgent">
+                            <input type="radio" id="priority_urgent" name="priority" value="Urgent" required>
+                            <label for="priority_urgent">Urgent</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Additional Description (Optional)</label>
+                <textarea id="description" name="description" placeholder="Provide any additional details or special requirements..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="submit-btn">Submit Request</button>
+                <button type="button" class="back-button" onclick="goBack()">Back to Sales</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h2>Request Submitted Successfully!</h2>
+            <p>Your request has been submitted and will be processed shortly.</p>
+            <p><strong>Request ID:</strong> <span id="requestId"></span></p>
+            <button class="modal-close" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('requestForm');
+            const inputs = form.querySelectorAll('input[required], select[required]');
+            
+            // Add real-time validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        this.style.borderColor = '#dc3545';
+                    } else {
+                        this.style.borderColor = '#28a745';
+                    }
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.style.borderColor === 'rgb(220, 53, 69)' && this.value.trim() !== '') {
+                        this.style.borderColor = '#e1e5e9';
+                    }
+                });
+            });
+            
+            // Form submission handling
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                let isValid = true;
+                let prioritySelected = false;
+                
+                // Check all required fields
+                inputs.forEach(input => {
+                    if (input.type === 'radio') {
+                        const radioGroup = form.querySelectorAll(`input[name="${input.name}"]`);
+                        const isChecked = Array.from(radioGroup).some(radio => radio.checked);
+                        if (input.name === 'priority' && isChecked) {
+                            prioritySelected = true;
+                        }
+                        if (!isChecked && input.name === 'priority' && !prioritySelected) {
+                            isValid = false;
+                        }
+                    } else if (input.value.trim() === '') {
+                        isValid = false;
+                        input.style.borderColor = '#dc3545';
+                        if (input === inputs[0]) input.focus();
+                    }
+                });
+                
+                if (!isValid) {
+                    showMessage('Please fill in all required fields.', 'error');
+                    return;
+                }
+                
+                // Simulate form submission
+                submitRequest();
+            });
+        });
+        
+    function submitRequest() {
+    const form = document.getElementById('requestForm');
+    const formData = new FormData(form);
+
+    fetch('/raise-request', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('requestId').textContent = data.request_id;
+            document.getElementById('successModal').style.display = 'block';
+            form.reset();
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => input.style.borderColor = '#e1e5e9');
+        } else {
+            showMessage('Submission failed. Try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('An error occurred during submission.', 'error');
+    });
+}
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById(type === 'error' ? 'error-message' : 'success-message');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+        
+        function goBack() {
+            // In a real application, this would navigate to the sales page
+            // For demo purposes, we'll show an alert
+            if (confirm('Are you sure you want to go back? Any unsaved changes will be lost.')) {
+                alert('Redirecting to Sales page...');
+                // window.location.href = '/sales';
+            }
+        }
+        
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('successModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

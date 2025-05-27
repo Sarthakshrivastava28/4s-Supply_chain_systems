@@ -1,0 +1,62 @@
+<form id="support-request-form">
+  <label for="request_id">Request ID</label>
+  <input type="number" id="request_id" name="request_id" required>
+
+  <label for="priority">Priority</label>
+  <select id="priority" name="priority" required>
+    <option value="">Select priority</option>
+    <option value="Low">Low</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High</option>
+  </select>
+
+  <label for="department">Department</label>
+  <input type="text" id="department" name="department">
+
+  <label for="sentiment">Sentiment</label>
+  <input type="text" id="sentiment" name="sentiment">
+
+  <label for="auto_reply">Auto Reply</label>
+  <input type="text" id="auto_reply" name="auto_reply">
+
+  <label for="status">Status</label>
+  <select id="status" name="status">
+    <option value="Open">Open</option>
+    <option value="In Progress">In Progress</option>
+    <option value="Closed">Closed</option>
+  </select>
+
+  <button type="submit">Submit Request</button>
+</form>
+
+<script>
+  document.getElementById('support-request-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const requestData = {
+      request_id: parseInt(document.getElementById('request_id').value),
+      priority: document.getElementById('priority').value,
+      department: document.getElementById('department').value,
+      sentiment: document.getElementById('sentiment').value,
+      auto_reply: document.getElementById('auto_reply').value,
+      status: document.getElementById('status').value
+    };
+
+    fetch('/raise-support-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestData)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Submission failed");
+      return response.json();
+    })
+    .then(data => {
+      alert(data.message);
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("Error submitting support request.");
+    });
+  });
+</script>

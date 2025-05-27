@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Customer</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input { width: 100%; padding: 8px; }
+        .form-label { font-weight: bold; }
+        .submit-btn { padding: 10px 20px; margin-top: 10px; }
+        .flash { padding: 10px; margin-bottom: 15px; border-radius: 4px; }
+        .flash.success { background-color: #d4edda; color: #155724; }
+        .flash.danger { background-color: #f8d7da; color: #721c24; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h2>Add Customer</h2>
+    <form method="POST" action="{{ url_for('add_customer') }}" onsubmit="return validateForm();">
+        <div class="form-group">
+            <label for="name" class="form-label">Full Name *</label>
+            <input type="text" name="name" id="name" required maxlength="150">
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" name="email" id="email" maxlength="120">
+        </div>
+
+        <div class="form-group">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" name="phone" id="phone" maxlength="20">
+        </div>
+
+        <div class="form-group">
+            <label for="customer_code" class="form-label">Customer Code *</label>
+            <input type="text" name="customer_code" id="customer_code" readonly required>
+        </div>
+
+        <button type="submit" class="submit-btn">Save Customer</button>
+    </form>
+
+    <h3>Customer List</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Customer Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.email or '-' }}</td>
+                    <td>{{ customer.phone or '-' }}</td>
+                    <td>{{ customer.customer_code }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function generateCustomerCode() {
+            const prefix = "CUST";
+            const random = Math.floor(Math.random() * 90000) + 10000;
+            return prefix + random;
+        }
+
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const customerCode = document.getElementById('customer_code').value.trim();
+            if (!name || !customerCode) {
+                alert('Name and Customer Code are required.');
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeField = document.getElementById('customer_code');
+            if (codeField && !codeField.value) {
+                codeField.value = generateCustomerCode();
+            }
+        });
+    </script>
+
+</body>
+</html>

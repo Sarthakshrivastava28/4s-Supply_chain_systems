@@ -1,20 +1,319 @@
-<!-- templates/sales.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Sales Module</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f0f8ff;
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
             text-align: center;
-            padding-top: 100px;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active { background-color: #4CAF50; }
+        .status-pending { background-color: #FF9800; }
+        .status-review { background-color: #2196F3; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .cards-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>📊 Sales Module</h1>
-    <p>Welcome to the Sales section of the Smart Supply Support System.</p>
-</body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Sales Module</h1>
+            <p>Smart Supply Support System - Sales Management Dashboard</p>
+        </div>
+
+        <div class="cards-container">
+            <!-- Raise a Request Card -->
+            <div class="card">
+                <span class="card-icon">🚀</span>
+                <h2>Raise a Request</h2>
+                <p>Create new sales requests, quotations, and customer inquiries. Submit your requirements and track progress in real-time.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">24</div>
+                        <div class="stat-label">Active Requests</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">156</div>
+                        <div class="stat-label">Total This Month</div>
+                    </div>
+                </div>
+                <button class="card-button" onclick="raiseRequest()">Create New Request</button>
+            </div>
+
+            <!-- Record of Request Card -->
+            <div class="card">
+                <span class="card-icon">📋</span>
+                <h2>Record of Requests</h2>
+                <p>View and manage all your sales requests history. Filter, search, and analyze past transactions and ongoing deals.</p>
+                <div style="margin: 15px 0;">
+                    <div style="margin-bottom: 8px;">
+                        <span class="status-indicator status-active"></span>
+                        <span>Active: 18 requests</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <span class="status-indicator status-pending"></span>
+                        <span>Pending: 12 requests</span>
+                    </div>
+                    <div>
+                        <span class="status-indicator status-review"></span>
+                        <span>Under Review: 6 requests</span>
+                    </div>
+                </div>
+                <button class="card-button" onclick="viewRecords()">View All Records</button>
+            </div>
+
+            <!-- Currency Check Card -->
+            <div class="card">
+                <span class="card-icon">💱</span>
+                <h2>Currency Check</h2>
+                <p>Real-time currency conversion and exchange rate monitoring for international sales transactions and pricing.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">1.08</div>
+                        <div class="stat-label">USD/EUR</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">83.24</div>
+                        <div class="stat-label">USD/INR</div>
+                    </div>
+                </div>
+                <button class="card-button" onclick="checkCurrency()">Check Rates</button>
+            </div>
+
+            <!-- Sales Analytics Card -->
+            <div class="card">
+                <span class="card-icon">📈</span>
+                <h2>Sales Analytics</h2>
+                <p>Comprehensive sales performance dashboard with detailed insights, trends, and forecasting capabilities.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">$47.2K</div>
+                        <div class="stat-label">This Month</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">+12.5%</div>
+                        <div class="stat-label">Growth Rate</div>
+                    </div>
+                </div>
+                <button class="card-button" onclick="viewAnalytics()">View Analytics</button>
+            </div>
+
+            <!-- Customer Management Card -->
+            <div class="card">
+                <span class="card-icon">👥</span>
+                <h2>Customer Management</h2>
+                <p>Manage customer relationships, track interactions, and maintain detailed customer profiles and communication history.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">342</div>
+                        <div class="stat-label">Active Customers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">28</div>
+                        <div class="stat-label">New This Month</div>
+                    </div>
+                </div>
+                <button class="card-button" onclick="manageCustomers()">Manage Customers</button>
+            </div>
+
+            <!-- Inventory Status Card -->
+            <div class="card">
+                <span class="card-icon">📦</span>
+                <h2>Inventory Status</h2>
+                <p>Real-time inventory tracking and stock level monitoring to ensure optimal sales operations and order fulfillment.</p>
+                <div style="margin: 15px 0;">
+                    <div style="margin-bottom: 8px;">
+                        <span class="status-indicator status-active"></span>
+                        <span>In Stock: 1,247 items</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <span class="status-indicator status-pending"></span>
+                        <span>Low Stock: 23 items</span>
+                    </div>
+                    <div>
+                        <span class="status-indicator" style="background-color: #f44336;"></span>
+                        <span>Out of Stock: 5 items</span>
+                    </div>
+                </div>
+                <button class="card-button" onclick="checkInventory()">Check Inventory</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function raiseRequest() {
+        window.location.href = '/raise-request';
+    }
+
+    function viewRecords() {
+        window.location.href = '/request-records';
+    }
+
+    function checkCurrency() {
+        window.location.href = '/currency-dashboard';
+    }
+
+    function viewAnalytics() {
+        window.location.href = '/sales-analytics';
+    }
+
+    function manageCustomers() {
+        window.location.href = '/manage-customers-sales';
+    }
+
+    function checkInventory() {
+        window.location.href = '/inventory-status';
+    }
+</script>
+
+        
 </html>
