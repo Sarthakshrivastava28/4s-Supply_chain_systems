@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -130,4 +130,208 @@
   </script>
 
 </body>
-</html>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add New Customer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background-color: #fff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #5d2c88;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 1em;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #7b4397;
+    }
+
+    .valid {
+      border-color: green !important;
+    }
+
+    .invalid {
+      border-color: red !important;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 0.85em;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(to right, #7b4397, #dc2430);
+      border: none;
+      padding: 12px;
+      font-size: 1em;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: linear-gradient(to right, #6a1b9a, #b71c1c);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Add New Customer</h2>
+    <form id="customerForm" novalidate>
+      <div class="form-group">
+        <label for="name" class="form-label">Full Name *</label>
+        <input type="text" id="name" name="name" class="form-input" maxlength="150" required>
+        <div class="error-message" id="nameError"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" id="email" name="email" class="form-input" maxlength="120">
+        <div class="error-message" id="emailError"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" id="phone" name="phone" class="form-input" maxlength="20">
+        <div class="error-message" id="phoneError"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="customer_code" class="form-label">Customer Code (auto-generated)</label>
+        <input type="text" id="customer_code" name="customer_code" class="form-input" readonly>
+      </div>
+
+      <button type="submit" class="submit-btn">Save Customer</button>
+    </form>
+  </div>
+
+  <script>
+    function generateCustomerCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return 'CUST-' + code;
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidPhone(phone) {
+      return /^[\d\s\-\+]{7,20}$/.test(phone);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('customerForm');
+      const name = document.getElementById('name');
+      const email = document.getElementById('email');
+      const phone = document.getElementById('phone');
+      const customerCode = document.getElementById('customer_code');
+
+      customerCode.value = generateCustomerCode();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        let isValid = true;
+
+        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+        [name, email, phone].forEach(input => input.classList.remove('valid', 'invalid'));
+
+        if (!name.value.trim()) {
+          document.getElementById('nameError').textContent = 'Name is required';
+          document.getElementById('nameError').style.display = 'block';
+          name.classList.add('invalid');
+          isValid = false;
+        } else {
+          name.classList.add('valid');
+        }
+
+        if (email.value && !isValidEmail(email.value.trim())) {
+          document.getElementById('emailError').textContent = 'Invalid email address';
+          document.getElementById('emailError').style.display = 'block';
+          email.classList.add('invalid');
+          isValid = false;
+        } else if (email.value) {
+          email.classList.add('valid');
+        }
+
+        if (phone.value && !isValidPhone(phone.value.trim())) {
+          document.getElementById('phoneError').textContent = 'Invalid phone number';
+          document.getElementById('phoneError').style.display = 'block';
+          phone.classList.add('invalid');
+          isValid = false;
+        } else if (phone.value) {
+          phone.classList.add('valid');
+        }
+
+        if (isValid) {
+          alert('Customer saved!\n\n' +
+            `Name: ${name.value}\n` +
+            `Email: ${email.value || 'N/A'}\n` +
+            `Phone: ${phone.value || 'N/A'}\n` +
+            `Code: ${customerCode.value}`
+          );
+          form.reset();
+          customerCode.value = generateCustomerCode();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html> -->

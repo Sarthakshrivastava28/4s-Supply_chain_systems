@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warehouse - Update Request</title>
+    <style>
+      body {
+        background-color: #121212;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .row {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .box {
+        border: 1px solid #aaa;
+        padding: 15px;
+        border-radius: 8px;
+        flex: 1;
+      }
+      .form-group {
+        margin-bottom: 10px;
+      }
+      input,
+      select,
+      button {
+        padding: 8px;
+        width: 100%;
+        border-radius: 5px;
+        border: none;
+        margin-top: 5px;
+      }
+      button {
+        background-color: #1e88e5;
+        color: white;
+        cursor: pointer;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #555;
+        padding: 8px;
+        text-align: left;
+      }
+      .info-box {
+        font-size: 0.9em;
+        color: #aaa;
+      }
+      .stock-result {
+        margin-top: 10px;
+        font-weight: bold;
+        color: #00e676;
+      }
+      .back-button {
+        text-align: right;
+        margin-bottom: 10px;
+      }
+      .back-button a {
+        background-color: #1e88e5;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+      }
+    </style>
+    <script>
+      async function checkStock() {
+        const product = document.querySelector("#product_name").value;
+        const quantity = parseInt(document.querySelector("#quantity").value);
+
+        if (!product || isNaN(quantity) || quantity <= 0) {
+          document.getElementById("stockResult").innerText =
+            "⚠️ Please enter a valid product and quantity.";
+          return;
+        }
+
+        const response = await fetch("/check-stock", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ product_name: product, quantity: quantity }),
+        });
+
+        const result = await response.json();
+        document.getElementById("stockResult").innerText = result.message;
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Warehouse Request Status Panel</h1>
+    <div class="back-button">
+      <a href="{{ url_for('warehouse_dashboard') }}">← Back to Dashboard</a>
+    </div>
+    <div class="container">
+      <div class="row">
+        <!-- Stock Check Box -->
+        <div class="box">
+          <h3>Stock Check</h3>
+          <div class="form-group">
+            <label for="product_name">Product Name</label>
+            <select id="product_name" name="product_name" required>
+              <option value="">Select a product</option>
+              {% for item in inventory_items %}
+              <option value="{{ item.item_name }}">{{ item.item_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              min="1"
+              required
+            />
+          </div>
+          <button onclick="checkStock()">Check</button>
+          <div class="stock-result" id="stockResult"></div>
+          <div class="info-box">
+            Select the product and quantity to check current stock availability.
+          </div>
+        </div>
+
+        <!-- Request Update Box -->
+        <div class="box">
+          <h3>Update Request</h3>
+          <form action="/update-status-by-customer-code" method="POST">
+            <div class="form-group">
+              <label for="customer_code">Customer Code</label>
+              <input
+                type="text"
+                id="customer_code"
+                name="customer_code"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select name="status" id="status" required>
+                <option value="New">New</option>
+                <option value="Needs Production">Needs Production</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Delayed">Delayed</option>
+              </select>
+            </div>
+            <button type="submit">Update</button>
+          </form>
+          <div class="info-box">
+            This will update the request status and update the list below.
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Orders Table -->
+      <h2>Sales Order</h2>
+      {% if requests %}
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer Code</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for request in requests %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ request.customer_code }}</td>
+            <td>{{ request.item_name }}</td>
+            <td>{{ request.quantity }}</td>
+            <td>{{ request.status }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="info-box">No sales orders to display.</p>
+      {% endif %}
+      <div class="info-box">
+        This table only shows requests with status: <strong>New</strong> and
+        <strong>Needs Production</strong>.
+      </div>
+    </div>
+  </body>
+</html>

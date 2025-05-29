@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dispatched Request Summary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #333;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dispatched Request Summary</h1>
+
+  {% if requests %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer Name</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in requests %}
+        <tr>
+          <td>{{ req.id }}</td>
+          <td>{{ req.customer_code }}</td>
+          <td>{{ req.item_name }}</td>
+          <td>{{ req.quantity }}</td>
+          <td>{{ req.priority }}</td>
+          <td>{{ req.status }}</td>
+          <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No dispatched requests available.</p>
+  {% endif %}
+</body>
+</html>

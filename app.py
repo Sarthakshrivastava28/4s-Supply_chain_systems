@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from models import db, User, Request,SupportTicket,Customer
+from models import db, User, Request,SupportTicket,Customer,Inventory
 from datetime import datetime, timezone
 import requests
 import pandas as pd
@@ -11,7 +11,7 @@ from io import BytesIO
 from flask_migrate import Migrate
 import random
 import string
-
+from datetime import date
 
 
 
@@ -157,35 +157,80 @@ def production_page():
 def support_page():
     return render_template('support.html')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ------------------ Raise Request Form ------------------
 @app.route('/raise-request', methods=['GET', 'POST'])
 @login_required
 def raise_request():
+    # Get only customers added by this user
+    customers = Customer.query.filter_by(user_id=current_user.id).all()
+
     if request.method == 'POST':
-        customer_name = request.form.get('customer_name')
+        customer_code = request.form.get('customer_code')
         item_name = request.form.get('item_name')
         quantity = request.form.get('quantity')
         priority = request.form.get('priority')
         description = request.form.get('description')
+        status = request.form.get('status')  # Optional dynamic status input
 
-        if not customer_name or not item_name or not quantity or not priority:
+        print("Posted values:", customer_code, item_name, quantity, priority, description, status)
+
+        # Validate required fields
+        if not customer_code or not item_name or not quantity or not priority:
             flash('Please fill all required fields.', 'error')
             return redirect(url_for('raise_request'))
 
         try:
+            # Check customer ownership and existence
+            customer = Customer.query.filter_by(customer_code=customer_code, user_id=current_user.id).first()
+            if not customer:
+                flash("Invalid or unauthorized customer code.", "error")
+                return redirect(url_for('raise_request'))
+
+            # Create new request with correct foreign key
             new_request = Request(
-                customer_name=customer_name,
+                customer_id=customer.id,
+                customer_code=customer.customer_code,  # Still stored for easy filtering
                 item_name=item_name,
                 quantity=int(quantity),
                 priority=priority,
                 description=description,
-                status='New',
+                status=status if status else 'New',
                 created_at=datetime.now(timezone.utc),
                 submitted_by=current_user.id
             )
+
             db.session.add(new_request)
             db.session.commit()
             flash('Request submitted successfully!', 'success')
+
         except Exception as e:
             db.session.rollback()
             print("Error while submitting request:", e)
@@ -193,13 +238,14 @@ def raise_request():
 
         return redirect(url_for('raise_request'))
 
-    return render_template('raise_request.html')
-
+    return render_template('raise_request.html', customers=customers)
 # ------------------ View All Requests ------------------
 @app.route('/request-records')
-def records_sales():
-    all_requests = Request.query.all()
-    return render_template('records_sales.html', requests=all_requests)
+@login_required
+def my_requests():
+    user_id = current_user.id
+    requests = Request.query.filter_by(submitted_by=user_id).order_by(Request.created_at.desc()).all()
+    return render_template('records_sales.html', requests=requests)
 
 # ------------------ Currency Exchange API ------------------
 @app.route('/currency-rate')
@@ -337,6 +383,7 @@ def add_customer():
     # GET: Show customers added by current user
     all_customers = Customer.query.filter_by(user_id=current_user.id).order_by(Customer.id.desc()).all()
     return render_template('add_customer.html', customers=all_customers)
+ 
 
 
 
@@ -369,50 +416,135 @@ def add_customer():
 
 
 
+# ------------------ Warehouse Module ------------------
 
+@app.route('/view-requests-warehouse')
 
+@role_required('admin', 'warehouse')
+def view_requests_warehouse():
+    requests = Request.query.order_by(Request.created_at.desc()).all()
+    return render_template('view_requests_warehouse.html', requests=requests)
 
 
 
+@app.route('/update-status-by-customer-code', methods=['POST'])
+@login_required
+@role_required('admin', 'warehouse', 'support')
+def update_status_by_customer_code():
+    customer_code = request.form.get('customer_code')
+    new_status = request.form.get('status')
 
+    # Fetch matching requests for display regardless of errors
+    requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
 
+    if not customer_code or not new_status:
+        flash("Both Customer Code and Status are required.", "error")
+        return render_template("dispatch_production.html", requests=requests)
 
+    req = Request.query.filter_by(customer_code=customer_code).first()
 
+    if not req:
+        flash(f"No request found for customer code: {customer_code}", "error")
+        return render_template("dispatch_production.html", requests=requests)
 
+    try:
+        req.status = new_status
+        db.session.commit()
+        flash("Request status updated successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating status: {str(e)}", "error")
 
+    # Refresh request list after update
+    requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
+    return render_template("dispatch_production.html", requests=requests)
 
 
 
 
 
 
+@app.route('/dispatch-decision')
+@login_required
+@role_required('warehouse', 'admin')
+def dispatch_decision():
+    # Fetch requests needing attention
+    requests = Request.query.filter(Request.status.in_(['New', 'Needs Production'])).all()
+    inventory_items = Inventory.query.all()
+    
+    return render_template('dispatch_production.html',
+                           requests=requests,
+                           inventory_items=inventory_items)
 
 
 
+@app.route('/warehouse-dashboard')
+@login_required
+@role_required('warehouse')
+def warehouse_dashboard():
+    return render_template("warehouse.html")
 
 
 
 
+@app.route('/check-stock', methods=['POST'])
+@login_required
+@role_required('warehouse')  # or other roles allowed
+def check_stock():
+    data = request.get_json()
+    product_name = data.get('product_name')
+    quantity = data.get('quantity')
 
+    if not product_name or quantity is None:
+        return jsonify({'message': 'Product name and quantity are required.'}), 400
 
+    inventory_item = Inventory.query.filter_by(item_name=product_name).first()
 
+    if not inventory_item:
+        return jsonify({'message': f'Product "{product_name}" not found in inventory.'}), 404
 
+    if inventory_item.stock_quantity >= quantity:
+        return jsonify({'message': f'✅ In stock: {inventory_item.stock_quantity} available.'})
+    else:
+        return jsonify({
+            'message': f'⚠️ Not enough stock. Only {inventory_item.stock_quantity} available.'
+        })
 
 
 
+@app.route('/warehouse/request-status')
+@login_required
+@role_required('warehouse')
+def warehouse_request_status():
+    inventory_items = Inventory.query.all()
+    requests = Request.query.filter(Request.status.in_(['New', 'Needs Production'])).all()
+    return render_template('warehouse_request_status.html', inventory_items=inventory_items, requests=requests)
 
 
 
 
 
+# ------------------ Daily Dispatch Summary ------------------
 
 
 
+@app.route('/daily-dispatch-summary')
+def daily_dispatch_summary():
+    # Fetch all requests where status is 'dispatched'
+    dispatched_requests = Request.query.filter_by(status='Dispatched').all()
 
+    return render_template('daily_summary_warehouse.html', requests=dispatched_requests)
 
 
 
 
+@app.route("/stock-reminders")
+def stock_reminders():
+    # Fetch all inventory items from the database
+    inventory_items = Inventory.query.all()
+    
+    # Pass inventory items to the template
+    return render_template("stock_level_warehouse.html", items=inventory_items)
 
 
 
@@ -436,6 +568,48 @@ def add_customer():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ------------------ Support Module------------------
 
 @app.route('/api/customer-request-support', methods=['GET'])
 @login_required
@@ -522,3 +696,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+

@@ -44,8 +44,13 @@ class Request(db.Model):
 # 📦 Inventory table managed by Warehouse & updated by Production
 class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    item_name = db.Column(db.String(100), unique=True, nullable=False)
-    stock_quantity = db.Column(db.Integer, nullable=False, default=0)
+    
+    item_name = db.Column(db.String(100), unique=True, nullable=False)  # e.g., "Mouse", "Monitor"
+    stock_quantity = db.Column(db.Integer, nullable=False, default=0)   # Available quantity
+
+    low_stock_threshold = db.Column(db.Integer, default=5)  # 🔔 For low stock alerts
+    
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  
 
 
 # 🏪 Warehouse Action

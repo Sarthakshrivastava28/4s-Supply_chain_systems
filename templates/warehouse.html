@@ -1,20 +1,361 @@
-<!-- templates/warehouse.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Warehouse Module</title>
     <style>
-        body {
-            background-color: #fff3cd;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 100px;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        padding: 20px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+      }
+
+      .card-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        display: block;
+      }
+
+      .card h2 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .card p {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .card-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+      }
+
+      .card-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      .status-active {
+        background-color: #4caf50;
+      }
+      .status-pending {
+        background-color: #ff9800;
+      }
+      .status-review {
+        background-color: #2196f3;
+      }
+      .status-critical {
+        background-color: #f44336;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .stat-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      @media (max-width: 768px) {
+        .cards-container {
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .container {
+          padding: 10px;
+        }
+      }
     </style>
-</head>
-<body>
-    <h1>📦 Warehouse Module</h1>
-    <p>Manage inventory and logistics in the Warehouse section.</p>
-</body>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🏭 Warehouse Module</h1>
+        <p>Smart Supply Support System - Warehouse Management Dashboard</p>
+      </div>
+
+      <div class="cards-container">
+        <!-- View Requests Card -->
+        <div class="card">
+          <span class="card-icon">👁️</span>
+          <h2>View Requests</h2>
+          <p>
+            View and manage all incoming requests from sales team, production
+            units, and customers for warehouse operations.
+          </p>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number">34</div>
+              <div class="stat-label">New Requests</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">127</div>
+              <div class="stat-label">Total Active</div>
+            </div>
+          </div>
+          <button class="card-button" onclick="viewRequests()">
+            View All Requests
+          </button>
+        </div>
+
+        <!-- Dispatch Decision Card -->
+        <div class="card">
+          <span class="card-icon">🚚</span>
+          <h2>Dispatch or Production Route</h2>
+          <p>
+            Decide whether to dispatch items directly from warehouse stock or
+            route requests to production based on availability.
+          </p>
+          <div style="margin: 15px 0">
+            <div style="margin-bottom: 8px">
+              <span class="status-indicator status-active"></span>
+              <span>Ready to Dispatch: 89 items</span>
+            </div>
+            <div style="margin-bottom: 8px">
+              <span class="status-indicator status-pending"></span>
+              <span>Route to Production: 23 items</span>
+            </div>
+            <div>
+              <span class="status-indicator status-review"></span>
+              <span>Pending Decision: 12 items</span>
+            </div>
+          </div>
+          <button class="card-button" onclick="manageDispatch()">
+            Manage Dispatch
+          </button>
+        </div>
+
+        <!-- Weather & Delivery Risk Card -->
+        <div class="card">
+          <span class="card-icon">🌤️</span>
+          <h2>Weather API & Delivery Risk</h2>
+          <p>
+            Real-time weather monitoring with delivery risk assessment tags to
+            optimize dispatch timing and route planning.
+          </p>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number">Low</div>
+              <div class="stat-label">Current Risk</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">23°C</div>
+              <div class="stat-label">Temperature</div>
+            </div>
+          </div>
+          <button class="card-button" onclick="checkWeather()">
+            Check Weather Risk
+          </button>
+        </div>
+
+        <!-- Stock Level Reminders Card -->
+        <div class="card">
+          <span class="card-icon">⏰</span>
+          <h2>Stock Level Reminders</h2>
+          <p>
+            Automated stock level monitoring with intelligent reminders for
+            reordering, low stock alerts, and inventory optimization.
+          </p>
+          <div style="margin: 15px 0">
+            <div style="margin-bottom: 8px">
+              <span class="status-indicator status-active"></span>
+              <span>Optimal Stock: 2,456 items</span>
+            </div>
+            <div style="margin-bottom: 8px">
+              <span class="status-indicator status-pending"></span>
+              <span>Low Stock Alerts: 47 items</span>
+            </div>
+            <div>
+              <span class="status-indicator status-critical"></span>
+              <span>Critical Reorder: 18 items</span>
+            </div>
+          </div>
+          <button class="card-button" onclick="manageStockReminders()">
+            Manage Reminders
+          </button>
+        </div>
+
+        <!-- Daily Dispatch Summary Card -->
+        <div class="card">
+          <span class="card-icon">📊</span>
+          <h2>Daily Dispatch Summary</h2>
+          <p>
+            Comprehensive daily dispatch reports with performance metrics,
+            delivery statistics, and operational insights.
+          </p>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number">247</div>
+              <div class="stat-label">Orders Dispatched</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">94.2%</div>
+              <div class="stat-label">On-time Rate</div>
+            </div>
+          </div>
+          <button class="card-button" onclick="viewDailySummary()">
+            View Daily Summary
+          </button>
+        </div>
+
+        <!-- SLA Monitoring Card -->
+        <div class="card">
+          <span class="card-icon">⚠️</span>
+          <h2>SLA Monitoring</h2>
+          <p>
+            Service Level Agreement monitoring with automated alerts for orders
+            exceeding 24-hour warehouse processing delays.
+          </p>
+          <div style="margin: 15px 0">
+            <div style="margin-bottom: 8px">
+              <span class="status-indicator status-active"></span>
+              <span>Within SLA: 156 orders</span>
+            </div>
+            <div style="margin-bottom: 8px">
+              <span class="status-indicator status-pending"></span>
+              <span>Near Deadline: 8 orders</span>
+            </div>
+            <div>
+              <span class="status-indicator status-critical"></span>
+              <span>SLA Breached: 3 orders</span>
+            </div>
+          </div>
+          <button class="card-button" onclick="monitorSLA()">
+            Monitor SLA
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function viewRequests() {
+        window.location.href = "/view-requests-warehouse";
+      }
+
+      function manageDispatch() {
+        window.location.href = "/dispatch-decision";
+      }
+
+      function checkWeather() {
+        window.location.href = "/weather-delivery-risk";
+      }
+
+      function manageStockReminders() {
+        window.location.href = "/stock-reminders";
+      }
+
+      function viewDailySummary() {
+        window.location.href = "/daily-dispatch-summary";
+      }
+
+      function monitorSLA() {
+        window.location.href = "/sla-monitoring";
+      }
+    </script>
+  </body>
 </html>

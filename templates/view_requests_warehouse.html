@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Warehouse - View Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .back-button {
+            margin-top: 30px;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1e88e5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-button:hover {
+            background-color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Warehouse Requests</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Requested By</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Requested At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in requests %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td>{{ r.customer_code }}</td>
+                <td>{{ r.item_name }}</td>
+                <td>{{ r.quantity }}</td>
+                <td>{{ r.status }}</td>
+                <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Update Request Status by Customer Code</h3>
+    <form action="{{ url_for('update_status_by_customer_code') }}" method="POST">
+        <label for="customer_code">Customer Code:</label>
+        <input type="text" name="customer_code" required>
+
+        <label for="status">New Status:</label>
+        <select name="status" required>
+            <option value="">--Select--</option>
+            <option value="New">New</option>
+            <option value="Dispatched">Dispatched</option>
+            <option value="Needs Production">Needs Production</option>
+            <option value="Delayed">Delayed</option>
+        </select>
+
+        <button type="submit">Update Status</button>
+    </form>
+
+    <a href="{{ url_for('warehouse_dashboard') }}" class="back-button">← Back to Warehouse Dashboard</a>
+</body>
+</html>
