@@ -1,63 +1,283 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dispatched Request Summary</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
-    h1 {
-      color: #333;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    table, th, td {
-      border: 1px solid #333;
-    }
-    th, td {
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background-color: #f4f4f4;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Dispatch Summary</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .back-button a {
+            background-color: #1e88e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #1976d2;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            color: #aaa;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .card-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .total-dispatched .card-value {
+            color: #69f0ae;
+        }
+        .high-priority .card-value {
+            color: #ff5252;
+        }
+        .medium-priority .card-value {
+            color: #ffd740;
+        }
+        .low-priority .card-value {
+            color: #1e88e5;
+        }
+        .table-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background-color: #2d2d2d;
+            font-weight: bold;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #2d2d2d;
+        }
+        .priority-high {
+            color: #ff5252;
+            font-weight: bold;
+        }
+        .priority-medium {
+            color: #ffd740;
+            font-weight: bold;
+        }
+        .priority-low {
+            color: #69f0ae;
+            font-weight: bold;
+        }
+        .no-requests {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+        }
+        .date-filter {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .date-filter input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2d2d2d;
+            color: #fff;
+        }
+        .date-filter button {
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: none;
+            background-color: #1e88e5;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .date-filter button:hover {
+            background-color: #1976d2;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .flash-message.success {
+            background-color: #00e676;
+            color: #000;
+        }
+        .flash-message.error {
+            background-color: #ff5252;
+            color: #fff;
+        }
+        .flash-message.info {
+            background-color: #1e88e5;
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
-  <h1>Dispatched Request Summary</h1>
+    <div class="container">
+        <div class="header">
+            <h1>Daily Dispatch Summary</h1>
+            <div class="back-button">
+                <a href="{{ url_for('warehouse_dashboard') }}">← Back to Dashboard</a>
+            </div>
+        </div>
 
-  {% if requests %}
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Customer Name</th>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Created At</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for req in requests %}
-        <tr>
-          <td>{{ req.id }}</td>
-          <td>{{ req.customer_code }}</td>
-          <td>{{ req.item_name }}</td>
-          <td>{{ req.quantity }}</td>
-          <td>{{ req.priority }}</td>
-          <td>{{ req.status }}</td>
-          <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No dispatched requests available.</p>
-  {% endif %}
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Date Filter -->
+        <div class="date-filter">
+            <input type="date" id="startDate" name="startDate">
+            <input type="date" id="endDate" name="endDate">
+            <button onclick="filterByDate()">Filter</button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card total-dispatched">
+                <div class="card-title">Total Dispatched</div>
+                <div class="card-value">{{ requests|length }}</div>
+            </div>
+            <div class="summary-card high-priority">
+                <div class="card-title">High Priority</div>
+                <div class="card-value">{{ requests|selectattr('priority', 'equalto', 'High')|list|length }}</div>
+            </div>
+            <div class="summary-card medium-priority">
+                <div class="card-title">Medium Priority</div>
+                <div class="card-value">{{ requests|selectattr('priority', 'equalto', 'Medium')|list|length }}</div>
+            </div>
+            <div class="summary-card low-priority">
+                <div class="card-title">Low Priority</div>
+                <div class="card-value">{{ requests|selectattr('priority', 'equalto', 'Low')|list|length }}</div>
+            </div>
+        </div>
+
+        <!-- Dispatched Requests Table -->
+        <div class="table-container">
+            {% if requests %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer Code</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>{{ req.id }}</td>
+                        <td>{{ req.customer_code }}</td>
+                        <td>{{ req.item_name }}</td>
+                        <td>{{ req.quantity }}</td>
+                        <td>
+                            <span class="priority-{{ req.priority|lower }}">
+                                {{ req.priority }}
+                            </span>
+                        </td>
+                        <td>{{ req.status }}</td>
+                        <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-requests">
+                <h2>No Dispatched Requests</h2>
+                <p>There are no requests that have been dispatched yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Set default dates to today
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        document.getElementById('startDate').value = yesterday.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+
+        function filterByDate() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // Add your date filtering logic here
+            // You might want to make an AJAX call to update the table
+            console.log('Filtering from', startDate, 'to', endDate);
+        }
+    </script>
 </body>
 </html>

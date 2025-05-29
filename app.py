@@ -15,6 +15,7 @@ from datetime import date
 
 
 
+from datetime import datetime, timezone, timedelta
 
 
 
@@ -426,6 +427,60 @@ def view_requests_warehouse():
     return render_template('view_requests_warehouse.html', requests=requests)
 
 
+# @app.route('/update-status-by-customer-code', methods=['POST'])
+# @login_required
+# @role_required('admin', 'warehouse', 'support')
+# def update_status_by_customer_code():
+#     customer_code = request.form.get('customer_code')
+#     new_status = request.form.get('status')
+
+#     # Preload eligible requests for the page
+#     requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
+
+#     if not customer_code or not new_status:
+#         flash("Both Customer Code and Status are required.", "error")
+#         return render_template("dispatch_production.html", requests=requests)
+
+#     req = Request.query.filter_by(customer_code=customer_code).first()
+
+#     if not req:
+#         flash(f"No request found for customer code: {customer_code}", "error")
+#         return render_template("dispatch_production.html", requests=requests)
+
+#     # 🔁 Prevent duplicate dispatch or unnecessary changes
+#     if req.status == "Dispatched" and new_status == "Dispatched":
+#         flash("Request already marked as Dispatched. No changes made.", "info")
+#         return render_template("dispatch_production.html", requests=requests)
+
+#     try:
+#         # Only deduct stock if newly dispatched
+#         if req.status != "Dispatched" and new_status == "Dispatched":
+#             inventory_item = Inventory.query.filter_by(item_name=req.item_name).first()
+#             if not inventory_item:
+#                 flash(f"❌ Inventory item '{req.item_name}' not found.", "error")
+#                 return render_template("dispatch_production.html", requests=requests)
+#             if inventory_item.stock_quantity < req.quantity:
+#                 flash(f"⚠️ Not enough stock to dispatch '{req.item_name}'. Only {inventory_item.stock_quantity} available.", "error")
+#                 return render_template("dispatch_production.html", requests=requests)
+
+#             # Deduct stock
+#             inventory_item.stock_quantity -= req.quantity
+
+#         # Update status
+#         req.status = new_status
+#         db.session.commit()
+#         flash("✅ Request status updated successfully!", "success")
+
+#     except Exception as e:
+#         db.session.rollback()
+#         flash(f"❌ Error updating status: {str(e)}", "error")
+
+#     # Refresh list again
+#     requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
+#     return render_template("dispatch_production.html", requests=requests,  selected_product=request.form.get("product_name", ""),
+#     selected_quantity=request.form.get("quantity", ""))
+
+
 
 @app.route('/update-status-by-customer-code', methods=['POST'])
 @login_required
@@ -434,30 +489,68 @@ def update_status_by_customer_code():
     customer_code = request.form.get('customer_code')
     new_status = request.form.get('status')
 
-    # Fetch matching requests for display regardless of errors
+    # Preload eligible requests for the page
     requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
+    inventory_items = Inventory.query.all()
 
     if not customer_code or not new_status:
         flash("Both Customer Code and Status are required.", "error")
-        return render_template("dispatch_production.html", requests=requests)
+        return render_template("dispatch_production.html", 
+                             requests=requests,
+                             inventory_items=inventory_items)
 
     req = Request.query.filter_by(customer_code=customer_code).first()
 
     if not req:
         flash(f"No request found for customer code: {customer_code}", "error")
-        return render_template("dispatch_production.html", requests=requests)
+        return render_template("dispatch_production.html", 
+                             requests=requests,
+                             inventory_items=inventory_items)
+
+    # 🔁 Prevent duplicate dispatch or unnecessary changes
+    if req.status == "Dispatched" and new_status == "Dispatched":
+        flash("Request already marked as Dispatched. No changes made.", "info")
+        return render_template("dispatch_production.html", 
+                             requests=requests,
+                             inventory_items=inventory_items)
 
     try:
+        # Only deduct stock if newly dispatched
+        if req.status != "Dispatched" and new_status == "Dispatched":
+            inventory_item = Inventory.query.filter_by(item_name=req.item_name).first()
+            if not inventory_item:
+                flash(f"❌ Inventory item '{req.item_name}' not found.", "error")
+                return render_template("dispatch_production.html", 
+                                     requests=requests,
+                                     inventory_items=inventory_items)
+            if inventory_item.stock_quantity < req.quantity:
+                flash(f"⚠️ Not enough stock to dispatch '{req.item_name}'. Only {inventory_item.stock_quantity} available.", "error")
+                return render_template("dispatch_production.html", 
+                                     requests=requests,
+                                     inventory_items=inventory_items)
+
+            # Deduct stock
+            inventory_item.stock_quantity -= req.quantity
+
+        # Update status
         req.status = new_status
         db.session.commit()
-        flash("Request status updated successfully!", "success")
+        flash("✅ Request status updated successfully!", "success")
+
     except Exception as e:
         db.session.rollback()
-        flash(f"Error updating status: {str(e)}", "error")
+        flash(f"❌ Error updating status: {str(e)}", "error")
 
-    # Refresh request list after update
+    # Refresh list again
     requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
-    return render_template("dispatch_production.html", requests=requests)
+    return render_template("dispatch_production.html", 
+                         requests=requests,
+                         inventory_items=inventory_items,
+                         selected_product=request.form.get("product_name", ""),
+                         selected_quantity=request.form.get("quantity", ""))
+
+
+
 
 
 
@@ -552,6 +645,42 @@ def stock_reminders():
 
 
 
+@app.route('/sla-monitoring')
+@login_required
+@role_required('admin', 'warehouse', 'support')
+def sla_monitoring():
+    # Calculate the timestamp for 48 hours ago
+    forty_eight_hours_ago = datetime.now(timezone.utc) - timedelta(hours=48)
+    
+    # Query requests that are older than 48 hours and have status New or Needs Production
+    overdue_requests = Request.query.filter(
+        Request.status.in_(['New', 'Needs Production']),
+        Request.created_at <= forty_eight_hours_ago
+    ).order_by(Request.created_at.asc()).all()
+    
+    # Calculate SLA metrics
+    total_overdue = len(overdue_requests)
+    new_overdue = sum(1 for r in overdue_requests if r.status == 'New')
+    production_overdue = sum(1 for r in overdue_requests if r.status == 'Needs Production')
+    
+    # Calculate hours overdue for each request
+    for request in overdue_requests:
+        hours_overdue = (datetime.now(timezone.utc) - request.created_at).total_seconds() / 3600
+        request.hours_overdue = round(hours_overdue, 1)
+    
+    return render_template('sla_monitoring.html',
+                         requests=overdue_requests,
+                         total_overdue=total_overdue,
+                         new_overdue=new_overdue,
+                         production_overdue=production_overdue)
+
+
+
+
+@app.route('/weather-delivery-risk')
+# @login_required # Uncomment if this page should require login
+def weather_page():
+    return render_template('weather_display.html')
 
 
 
@@ -559,12 +688,35 @@ def stock_reminders():
 
 
 
-
-
-
-
-
-
+@app.route('/api/weather/temperature')
+@login_required # Or remove if public access is okay
+def mock_temperature_api():
+    # Simulate different weather conditions
+    conditions = [
+        {"condition": "Sunny", "temperature_celsius": round(random.uniform(20, 35), 1)},
+        {"condition": "Cloudy", "temperature_celsius": round(random.uniform(15, 25), 1)},
+        {"condition": "Rainy", "temperature_celsius": round(random.uniform(10, 20), 1)},
+        {"condition": "Stormy", "temperature_celsius": round(random.uniform(10, 18), 1), "wind_mph": round(random.uniform(15, 30),1)},
+        {"condition": "Snowy", "temperature_celsius": round(random.uniform(-5, 2), 1)},
+        {"condition": "Extreme Heat", "temperature_celsius": round(random.uniform(35, 45), 1), "alert": "Heatwave warning"},
+        {"condition": "Freezing", "temperature_celsius": round(random.uniform(-15, -1), 1), "alert": "Frost warning"}
+    ]
+    
+    selected_weather = random.choice(conditions)
+    
+    response_data = {
+        "location": "Mock City",
+        "temperature_celsius": selected_weather["temperature_celsius"],
+        "condition": selected_weather["condition"],
+        "unit": "Celsius",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    if "wind_mph" in selected_weather:
+        response_data["wind_mph"] = selected_weather["wind_mph"]
+    if "alert" in selected_weather:
+        response_data["alert"] = selected_weather["alert"]
+        
+    return jsonify(response_data)
 
 
 

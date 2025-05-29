@@ -47,6 +47,9 @@
         color: white;
         cursor: pointer;
       }
+      button:hover {
+        background-color: #1976d2;
+      }
       table {
         width: 100%;
         border-collapse: collapse;
@@ -64,7 +67,12 @@
       .stock-result {
         margin-top: 10px;
         font-weight: bold;
+      }
+      .stock-result.success {
         color: #00e676;
+      }
+      .stock-result.error {
+        color: #ff5252;
       }
       .back-button {
         text-align: right;
@@ -78,33 +86,44 @@
         text-decoration: none;
         font-size: 14px;
       }
-    </style>
-    <script>
-      async function checkStock() {
-        const product = document.querySelector("#product_name").value;
-        const quantity = parseInt(document.querySelector("#quantity").value);
-
-        if (!product || isNaN(quantity) || quantity <= 0) {
-          document.getElementById("stockResult").innerText =
-            "⚠️ Please enter a valid product and quantity.";
-          return;
-        }
-
-        const response = await fetch("/check-stock", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ product_name: product, quantity: quantity }),
-        });
-
-        const result = await response.json();
-        document.getElementById("stockResult").innerText = result.message;
+      .flash-messages {
+        margin-bottom: 20px;
       }
-    </script>
+      .flash-message {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .flash-message.success {
+        background-color: #00e676;
+        color: #000;
+      }
+      .flash-message.error {
+        background-color: #ff5252;
+        color: #fff;
+      }
+      .flash-message.info {
+        background-color: #1e88e5;
+        color: #fff;
+      }
+    </style>
   </head>
   <body>
     <h1>Warehouse Request Status Panel</h1>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
     <div class="back-button">
       <a href="{{ url_for('warehouse_dashboard') }}">← Back to Dashboard</a>
     </div>
@@ -118,7 +137,7 @@
             <select id="product_name" name="product_name" required>
               <option value="">Select a product</option>
               {% for item in inventory_items %}
-              <option value="{{ item.item_name }}">{{ item.item_name }}</option>
+              <option value="{{ item.item_name }}" {% if selected_product == item.item_name %}selected{% endif %}>{{ item.item_name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -129,10 +148,11 @@
               id="quantity"
               name="quantity"
               min="1"
+              value="{{ selected_quantity }}"
               required
             />
           </div>
-          <button onclick="checkStock()">Check</button>
+          <button id="checkStockBtn">Check Stock</button>
           <div class="stock-result" id="stockResult"></div>
           <div class="info-box">
             Select the product and quantity to check current stock availability.
@@ -161,7 +181,7 @@
                 <option value="Delayed">Delayed</option>
               </select>
             </div>
-            <button type="submit">Update</button>
+            <button type="submit">Update Status</button>
           </form>
           <div class="info-box">
             This will update the request status and update the list below.
@@ -170,7 +190,7 @@
       </div>
 
       <!-- Sales Orders Table -->
-      <h2>Sales Order</h2>
+      <h2>Sales Orders</h2>
       {% if requests %}
       <table>
         <thead>
@@ -202,5 +222,43 @@
         <strong>Needs Production</strong>.
       </div>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const checkButton = document.getElementById('checkStockBtn');
+        const stockResult = document.getElementById('stockResult');
+        
+        if (checkButton) {
+          checkButton.addEventListener('click', async function() {
+            const product = document.querySelector("#product_name").value;
+            const quantity = parseInt(document.querySelector("#quantity").value);
+
+            if (!product || isNaN(quantity) || quantity <= 0) {
+              stockResult.innerText = "⚠️ Please enter a valid product and quantity.";
+              stockResult.className = 'stock-result error';
+              return;
+            }
+
+            try {
+              const response = await fetch("/check-stock", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ product_name: product, quantity: quantity }),
+              });
+
+              const result = await response.json();
+              stockResult.innerText = result.message;
+              stockResult.className = 'stock-result ' + (result.message.includes('✅') ? 'success' : 'error');
+            } catch (error) {
+              stockResult.innerText = "❌ Error checking stock. Please try again.";
+              stockResult.className = 'stock-result error';
+              console.error("Check stock error:", error);
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>

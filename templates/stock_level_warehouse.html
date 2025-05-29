@@ -2,35 +2,221 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warehouse Stock Levels</title>
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
-        tr.low-stock { background-color: #ffcccc; } /* Highlight low stock */
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .back-button a {
+            background-color: #1e88e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #1976d2;
+        }
+        .table-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto; /* For responsive tables */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background-color: #2d2d2d;
+            font-weight: bold;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #2d2d2d;
+        }
+        .stock-status {
+            padding: 5px 10px;
+            border-radius: 15px; /* Pill shape */
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block; /* To fit content */
+            min-width: 80px; /* Ensure consistent width */
+        }
+        .stock-ok {
+            background-color: #00c853; /* Green */
+            color: #000;
+        }
+        .stock-low {
+            background-color: #ffd600; /* Yellow */
+            color: #000;
+        }
+        .stock-critical {
+            background-color: #d50000; /* Red */
+            color: #fff;
+        }
+        .no-items {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .search-bar input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2d2d2d;
+            color: #fff;
+            font-size: 1em;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .flash-message.success {
+            background-color: #00e676;
+            color: #000;
+        }
+        .flash-message.error {
+            background-color: #ff5252;
+            color: #fff;
+        }
+        .flash-message.info {
+            background-color: #1e88e5;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-    <h1>Current Inventory Levels</h1>
+    <div class="container">
+        <div class="header">
+            <h1>Current Inventory Levels</h1>
+            <div class="back-button">
+                <a href="{{ url_for('warehouse_dashboard') }}">← Back to Dashboard</a>
+            </div>
+        </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Low Stock Threshold</th>
-                <th>Last Updated</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr class="{% if item.stock_quantity < item.low_stock_threshold %}low-stock{% endif %}">
-                <td>{{ item.item_name }}</td>
-                <td>{{ item.stock_quantity }}</td>
-                <td>{{ item.low_stock_threshold }}</td>
-                <td>{{ item.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchStock" onkeyup="filterTable()" placeholder="Search for items...">
+        </div>
+
+        <div class="table-container">
+            {% if items %}
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Low Stock Threshold</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.item_name }}</td>
+                        <td>{{ item.stock_quantity }}</td>
+                        <td>{{ item.low_stock_threshold }}</td>
+                        <td>
+                            {% if item.stock_quantity <= item.low_stock_threshold * 0.5 %}
+                                <span class="stock-status stock-critical">Critical</span>
+                            {% elif item.stock_quantity <= item.low_stock_threshold %}
+                                <span class="stock-status stock-low">Low</span>
+                            {% else %}
+                                <span class="stock-status stock-ok">OK</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-items">
+                <h2>No Inventory Items</h2>
+                <p>There are no items currently in the inventory.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function filterTable() {
+            const input = document.getElementById("searchStock");
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById("stockTable");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) { // Start from 1 to skip header row
+                let td = tr[i].getElementsByTagName("td")[0]; // Search by item name (first column)
+                if (td) {
+                    let txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>

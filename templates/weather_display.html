@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Weather Display</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .fetch-button-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #fetchWeatherBtn {
+            background-color: #1e88e5;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1em;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #fetchWeatherBtn:hover {
+            background-color: #1976d2;
+        }
+        .weather-info {
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            display: none; /* Hidden by default */
+        }
+        .weather-info h2 {
+            margin-top: 0;
+            color: #1e88e5;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .weather-info p {
+            font-size: 1.1em;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .weather-info strong {
+            color: #aaa;
+        }
+        .weather-alert {
+            background-color: #d50000; /* Red for alert */
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .loading-message {
+            text-align: center;
+            color: #aaa;
+            font-style: italic;
+            display: none; /* Hidden by default */
+            margin-bottom: 20px;
+        }
+        .back-button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .back-button a {
+            background-color: #333;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Weather Information</h1>
+        </div>
+
+        <div class="fetch-button-container">
+            <button id="fetchWeatherBtn">Fetch Latest Weather</button>
+        </div>
+
+        <div class="loading-message" id="loadingMessage">
+            Fetching weather data...
+        </div>
+
+        <div class="weather-info" id="weatherInfoContainer">
+            <h2>Current Weather in <span id="location"></span></h2>
+            <p><strong>Temperature:</strong> <span id="temperature"></span> &deg;C</p>
+            <p><strong>Condition:</strong> <span id="condition"></span></p>
+            <p id="windInfo" style="display:none;"><strong>Wind:</strong> <span id="wind"></span> mph</p>
+            <div id="alertInfo" style="display:none;" class="weather-alert"></div>
+            <p><small><strong>Last Updated:</strong> <span id="timestamp"></span></small></p>
+        </div>
+        
+        <div class="back-button-container">
+             <a href="{{ url_for('dashboard') if current_user and current_user.is_authenticated else url_for('home') }}">← Back to Dashboard/Home</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fetchWeatherBtn').addEventListener('click', fetchWeather);
+
+        async function fetchWeather() {
+            const weatherInfoContainer = document.getElementById('weatherInfoContainer');
+            const loadingMessage = document.getElementById('loadingMessage');
+            
+            weatherInfoContainer.style.display = 'none';
+            loadingMessage.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/weather/temperature');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                document.getElementById('location').textContent = data.location;
+                document.getElementById('temperature').textContent = data.temperature_celsius;
+                document.getElementById('condition').textContent = data.condition;
+                
+                const windInfoP = document.getElementById('windInfo');
+                if (data.wind_mph) {
+                    document.getElementById('wind').textContent = data.wind_mph;
+                    windInfoP.style.display = 'block';
+                } else {
+                    windInfoP.style.display = 'none';
+                }
+
+                const alertInfoDiv = document.getElementById('alertInfo');
+                if (data.alert) {
+                    alertInfoDiv.textContent = data.alert;
+                    alertInfoDiv.style.display = 'block';
+                } else {
+                    alertInfoDiv.style.display = 'none';
+                }
+                
+                // Format timestamp
+                const rawTimestamp = new Date(data.timestamp);
+                document.getElementById('timestamp').textContent = rawTimestamp.toLocaleString();
+
+                weatherInfoContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                document.getElementById('weatherInfoContainer').innerHTML = 
+                    '<p style="color:red; text-align:center;">Failed to load weather data. Please try again.</p>';
+                weatherInfoContainer.style.display = 'block'; // Show the container to display the error
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        }
+        // Optionally, fetch weather on page load
+        // fetchWeather(); 
+    </script>
+</body>
+</html> 

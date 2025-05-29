@@ -2,84 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Warehouse - View Requests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse - View All Requests</title>
     <style>
         body {
+            background-color: #121212;
+            color: #fff;
             font-family: Arial, sans-serif;
             padding: 20px;
+            margin: 0;
         }
-        h1 {
-            margin-bottom: 20px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .back-button a {
+            background-color: #1e88e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #1976d2;
+        }
+        .filter-search-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+        .filter-search-bar input[type="text"],
+        .filter-search-bar select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2d2d2d;
+            color: #fff;
+            font-size: 1em;
+        }
+        .filter-search-bar input[type="text"] {
+            flex-grow: 1;
+        }
+        .table-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto; /* For responsive tables */
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 10px;
         }
         th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
         }
         th {
-            background-color: #f0f0f0;
+            background-color: #2d2d2d;
+            font-weight: bold;
+            color: #fff;
         }
-        .back-button {
-            margin-top: 30px;
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #1e88e5;
-            color: white;
-            text-decoration: none;
+        tr:hover {
+            background-color: #2d2d2d;
+        }
+        .status-new { background-color: #1e88e5; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
+        .status-needs-production { background-color: #ffd740; color: #000; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
+        .status-dispatched { background-color: #00c853; color: #000; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
+        .status-delayed { background-color: #d50000; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
+        .no-requests {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 10px;
             border-radius: 5px;
         }
-        .back-button:hover {
-            background-color: #1565c0;
-        }
+        .flash-message.success { background-color: #00e676; color: #000; }
+        .flash-message.error { background-color: #ff5252; color: #fff; }
+        .flash-message.info { background-color: #1e88e5; color: #fff; }
     </style>
 </head>
 <body>
-    <h1>Warehouse Requests</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Requested By</th>
-                <th>Item</th>
-                <th>Quantity</th>
-                <th>Status</th>
-                <th>Requested At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for r in requests %}
-            <tr>
-                <td>{{ r.id }}</td>
-                <td>{{ r.customer_code }}</td>
-                <td>{{ r.item_name }}</td>
-                <td>{{ r.quantity }}</td>
-                <td>{{ r.status }}</td>
-                <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="container">
+        <div class="header">
+            <h1>All Warehouse Requests</h1>
+            <div class="back-button">
+                <a href="{{ url_for('warehouse_dashboard') }}">← Back to Warehouse Dashboard</a>
+            </div>
+        </div>
 
-    <h3>Update Request Status by Customer Code</h3>
-    <form action="{{ url_for('update_status_by_customer_code') }}" method="POST">
-        <label for="customer_code">Customer Code:</label>
-        <input type="text" name="customer_code" required>
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
 
-        <label for="status">New Status:</label>
-        <select name="status" required>
-            <option value="">--Select--</option>
-            <option value="New">New</option>
-            <option value="Dispatched">Dispatched</option>
-            <option value="Needs Production">Needs Production</option>
-            <option value="Delayed">Delayed</option>
-        </select>
+        <!-- Filter and Search Bar -->
+        <div class="filter-search-bar">
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Customer Code, Item, or Status...">
+            <select id="statusFilter" onchange="filterTable()">
+                <option value="">All Statuses</option>
+                <option value="New">New</option>
+                <option value="Needs Production">Needs Production</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Delayed">Delayed</option>
+                <!-- Add other statuses if any -->
+            </select>
+        </div>
 
-        <button type="submit">Update Status</button>
-    </form>
+        <div class="table-container">
+            {% if requests %}
+            <table id="requestsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer Code</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Requested At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in requests %}
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>{{ r.customer_code }}</td>
+                        <td>{{ r.item_name }}</td>
+                        <td>{{ r.quantity }}</td>
+                        <td>{{ r.priority }}</td>
+                        <td><span class="status-{{ r.status | lower | replace(' ', '-') }}">{{ r.status }}</span></td>
+                        <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-requests">
+                <h2>No Requests Found</h2>
+                <p>There are no requests to display at the moment.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
-    <a href="{{ url_for('warehouse_dashboard') }}" class="back-button">← Back to Warehouse Dashboard</a>
+    <script>
+        function filterTable() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const statusFilter = document.getElementById("statusFilter").value.toLowerCase();
+            const table = document.getElementById("requestsTable");
+            const tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) { // Start from 1 to skip header row
+                const customerCodeTd = tr[i].getElementsByTagName("td")[1];
+                const itemNameTd = tr[i].getElementsByTagName("td")[2];
+                const statusTd = tr[i].getElementsByTagName("td")[5];
+                let displayRow = true;
+
+                if (customerCodeTd && itemNameTd && statusTd) {
+                    const customerCodeText = customerCodeTd.textContent || customerCodeTd.innerText;
+                    const itemNameText = itemNameTd.textContent || itemNameTd.innerText;
+                    const statusText = statusTd.textContent || statusTd.innerText;
+
+                    // Search filter (checks customer code, item name, and status text)
+                    if (searchInput && 
+                        customerCodeText.toLowerCase().indexOf(searchInput) === -1 &&
+                        itemNameText.toLowerCase().indexOf(searchInput) === -1 &&
+                        statusText.toLowerCase().indexOf(searchInput) === -1) {
+                        displayRow = false;
+                    }
+
+                    // Status dropdown filter
+                    if (statusFilter && statusText.toLowerCase() !== statusFilter) {
+                        displayRow = false;
+                    }
+
+                    tr[i].style.display = displayRow ? "" : "none";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
