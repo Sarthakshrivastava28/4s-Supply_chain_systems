@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>{{ title if title else "Create Support Query" }}</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            padding-top: 70px; /* Adjusted for fixed navbar */
+            margin: 0;
+        }
+        .navbar-dark.bg-dark {
+            background-color: #1c1c1c !important;
+            border-bottom: 1px solid #333;
+        }
+        .container {
+            max-width: 800px; /* Adjusted for a form page */
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        /* Flash Messages Styling */
+        .flash-messages .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .flash-messages .alert-success { background-color: #00c853; border-color: #009624; color: #000; }
+        .flash-messages .alert-danger { background-color: #d50000; border-color: #b20000; color: #fff; }
+        .flash-messages .alert-info { background-color: #1e88e5; border-color: #007bff; color: #fff; }
+        .flash-messages .alert-warning { background-color: #ffd740; border-color: #ffab00; color: #000; }
+
+        /* Form Styling */
+        .form-container {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        .form-group label {
+            color: #e0e0e0; /* Light label text */
+            margin-bottom: .5rem;
+        }
+        .form-control {
+            background-color: #2d2d2d;
+            color: #fff;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .form-control:focus {
+            background-color: #2d2d2d;
+            color: #fff;
+            border-color: #1e88e5; /* Blue border on focus */
+            box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.25);
+        }
+        textarea.form-control {
+            min-height: 120px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s, border-color 0.3s;
+            border: 1px solid transparent;
+            margin-top: 10px; /* Add some space above buttons */
+        }
+        .btn-primary {
+            background-color: #1e88e5; /* Blue primary button */
+            border-color: #1565c0;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: #1565c0;
+            border-color: #104e90;
+            color: #fff;
+        }
+        .btn-secondary {
+            background-color: #4f5b62;
+            border-color: #384045;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background-color: #384045;
+            border-color: #2a2f33;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="{{ url_for('home') }}">MyApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    {% if current_user.role == 'admin' %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_page') }}">Admin</a></li>
+                    {% endif %}
+                     {% if current_user.role in ['admin', 'sales'] %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('sales_page') }}">Sales</a></li>
+                    {% endif %}
+                    {% if current_user.role in ['admin', 'warehouse'] %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('warehouse_page') }}">Warehouse</a></li>
+                    {% endif %}
+                    {% if current_user.role in ['admin', 'production'] %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('production_page') }}">Production</a></li>
+                    {% endif %}
+                    {% if current_user.role in ['admin', 'support'] %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('support_page') }}">Support</a></li>
+                         <li class="nav-item"><a class="nav-link" href="{{ url_for('pending_requests') }}">Pending Requests</a></li>
+                         <li class="nav-item"><a class="nav-link" href="{{ url_for('create_query') }}">Create Query</a></li>
+                         <li class="nav-item"><a class="nav-link" href="{{ url_for('support_sla_monitoring') }}">SLA Monitoring</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Hi, {{ current_user.username }} ({{ current_user.role }})</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main role="main" class="container">
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <h2>{{ title }}</h2>
+        
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('create_query') }}">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ title_value if title_value else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="5" required>{{ description_value if description_value else '' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Query</button>
+                <a href="{{ url_for('support_page') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> 

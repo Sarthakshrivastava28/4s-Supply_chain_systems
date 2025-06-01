@@ -137,10 +137,11 @@ def logout():
  
 
 # ------------------ Dashboard ------------------
-@app.route('/dashboard')
+@app.route('/all_tables')
+@role_required('admin')
 @login_required
 def dashboard():
-    return render_template('dashboard.html', user=current_user)
+    return render_template('all_tables', user=current_user)
 
 # ------------------ Role-Based Routes ------------------
 @app.route('/admin')
@@ -173,33 +174,28 @@ def production_page():
 def support_page():
     return render_template('support.html')
 
+# Restore support sales module
+@app.route('/support-sales')
+@login_required
+def support_sales():
+    user_id = current_user.id
+    # Fetch requests created by the current user
+    requests = Request.query.filter_by(submitted_by=user_id).order_by(Request.created_at.desc()).all()
+    return render_template('support_sales.html', requests=requests)
 
+@app.route('/send-to-support/<int:request_id>', methods=['POST'])
+@login_required
+def send_to_support(request_id):
+    request_item = Request.query.get_or_404(request_id)
+    # Ensure the user owns this request or is an admin/support
+    if request_item.submitted_by != current_user.id and current_user.role not in ['admin', 'support']:
+        flash('You are not authorized to perform this action.', 'danger')
+        return redirect(url_for('support_sales'))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    request_item.status = 'Sent to Support'
+    db.session.commit()
+    flash('Request sent to support successfully.', 'success')
+    return redirect(url_for('support_sales'))
 
 # ------------------ Raise Request Form ------------------
 @app.route('/raise-request', methods=['GET', 'POST'])
@@ -442,72 +438,6 @@ def view_requests_warehouse():
     return render_template('view_requests_warehouse.html', requests=requests)
 
 
-# @app.route('/update-status-by-customer-code', methods=['POST'])
-# @login_required
-# @role_required('admin', 'warehouse', 'support')
-# def update_status_by_customer_code():
-#     customer_code = request.form.get('customer_code')
-#     new_status = request.form.get('status')
-
-#     # Preload eligible requests for the page
-#     requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
-#     inventory_items = Inventory.query.all()
-
-#     if not customer_code or not new_status:
-#         flash("Both Customer Code and Status are required.", "error")
-#         return render_template("dispatch_production.html", 
-#                              requests=requests,
-#                              inventory_items=inventory_items)
-
-#     req = Request.query.filter_by(customer_code=customer_code).first()
-
-#     if not req:
-#         flash(f"No request found for customer code: {customer_code}", "error")
-#         return render_template("dispatch_production.html", 
-#                              requests=requests,
-#                              inventory_items=inventory_items)
-
-#     # 🔁 Prevent duplicate dispatch or unnecessary changes
-#     if req.status == "Dispatched" and new_status == "Dispatched":
-#         flash("Request already marked as Dispatched. No changes made.", "info")
-#         return render_template("dispatch_production.html", 
-#                              requests=requests,
-#                              inventory_items=inventory_items)
-
-#     try:
-#         # Only deduct stock if newly dispatched
-#         if req.status != "Dispatched" and new_status == "Dispatched":
-#             inventory_item = Inventory.query.filter_by(item_name=req.item_name).first()
-#             if not inventory_item:
-#                 flash(f"❌ Inventory item '{req.item_name}' not found.", "error")
-#                 return render_template("dispatch_production.html", 
-#                                      requests=requests,
-#                                      inventory_items=inventory_items)
-#             if inventory_item.stock_quantity < req.quantity:
-#                 flash(f"⚠️ Not enough stock to dispatch '{req.item_name}'. Only {inventory_item.stock_quantity} available.", "error")
-#                 return render_template("dispatch_production.html", 
-#                                      requests=requests,
-#                                      inventory_items=inventory_items)
-
-#             # Deduct stock
-#             inventory_item.stock_quantity -= req.quantity
-
-#         # Update status
-#         req.status = new_status
-#         db.session.commit()
-#         flash("✅ Request status updated successfully!", "success")
-
-#     except Exception as e:
-#         db.session.rollback()
-#         flash(f"❌ Error updating status: {str(e)}", "error")
-
-#     # Refresh list again
-#     requests = Request.query.filter(Request.status.in_(["New", "Needs Production"])).all()
-#     return render_template("dispatch_production.html", 
-#                          requests=requests,
-#                          inventory_items=inventory_items,
-#                          selected_product=request.form.get("product_name", ""),
-#                          selected_quantity=request.form.get("quantity", ""))
 
 
 
@@ -564,8 +494,9 @@ def process_request_action(request_id):
 @login_required
 @role_required('warehouse', 'admin')
 def dispatch_decision():
-    # Fetch requests needing attention
-    requests_to_process = Request.query.filter(Request.status.in_(['New', 'Needs Production'])).order_by(Request.created_at.asc()).all()
+    # Fetch requests needing attention, including 'Ready for Dispatch' and 'Sent to Production'
+    statuses_to_include = ['New', 'Needs Production', 'Ready for Dispatch', 'Sent to Production']
+    requests_to_process = Request.query.filter(Request.status.in_(statuses_to_include)).order_by(Request.created_at.asc()).all()
     inventory_items_list = Inventory.query.all()
     inventory_map = {item.item_name: item.stock_quantity for item in inventory_items_list}
 
@@ -579,6 +510,7 @@ def dispatch_decision():
     return render_template('dispatch_production.html',
                            requests=processed_requests,
                            inventory_items=inventory_items_list) 
+ 
 
 
 @app.route('/warehouse-dashboard')
@@ -921,73 +853,23 @@ def production_analytics_page():
 
 # ------------------ Support Module------------------
 
-@app.route('/api/customer-request-support', methods=['GET'])
+@app.route('/pending-requests')
 @login_required
-@role_required('admin', 'sales', 'support')
-def customer_requests_api():
-    requests_data = Request.query.all()
-    output = [
-        {
-            'id': r.id,
-            'customer_name': r.customer_name,
-            'item_name': r.item_name,
-            'priority': r.priority
-        } for r in requests_data
-    ]
-    return jsonify(output)
+def pending_requests():
+    # TODO: Replace with actual logic to fetch pending requests
+    return render_template('support_pending_requests.html')
 
-
-@app.route('/customer-manager-support')
+@app.route('/create-query')
 @login_required
-@role_required('admin', 'sales', 'support')
-def customer_manager_support():
-    return render_template('customer_manager_support.html')
+def create_query():
+    # TODO: Show form to create support query
+    return render_template('support_pending_requests.html')
 
-
-
-
-@app.route('/raise-support-request', methods=['GET', 'POST'])
+@app.route('/support-sla-monitoring')
 @login_required
-@role_required('admin', 'support', 'sales')
-def raise_support_request():
-    if request.method == 'GET':
-        return render_template('raise_request_support.html')
-
-    # POST logic
-    try:
-        data = request.get_json()
-        print("Received data:", data)  # Debugging
-
-        request_id = data.get('request_id')
-        priority = data.get('priority')
-        department = data.get('department')
-        status = data.get('status', 'Open')
-        sentiment = data.get('sentiment')
-        auto_reply = data.get('auto_reply')
-
-        if not request_id or not priority:
-            return jsonify({'error': 'Request ID and Priority are required'}), 400
-
-        new_ticket = SupportTicket(
-            request_id=request_id,
-            priority=priority,
-            department=department,
-            status=status,
-            sentiment=sentiment,
-            auto_reply=auto_reply,
-            created_by=current_user.id
-        )
-
-        db.session.add(new_ticket)
-        db.session.commit()
-
-        return jsonify({'message': 'Support ticket submitted successfully'}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        print("Error:", e)
-        return jsonify({'error': 'Failed to submit support request'}), 500
-
+def support_sla_monitoring():
+    # TODO: Display SLA metrics and alerts
+    return render_template('support_sla_monitoring.html')
 
 
 
@@ -1015,6 +897,30 @@ def add_header(response):
     # response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1' # Usually not needed for modern apps
     # response.headers['Cache-Control'] = 'public, max-age=0' # Default for Flask, might be overridden
     return response
+
+
+@app.route('/all-tables')
+@login_required
+@role_required('admin')
+def all_tables():
+    users = User.query.all()
+    customers = Customer.query.all()
+    requests = Request.query.all()
+    inventory = Inventory.query.all()
+    
+    
+    
+    
+    return render_template(
+        'all_tables.html',
+        users=users,
+        customers=customers,
+        requests=requests,
+        inventory=inventory,
+        
+      
+        
+    )
 
 
 

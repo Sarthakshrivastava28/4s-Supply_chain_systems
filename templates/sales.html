@@ -164,6 +164,9 @@
     </style>
 </head>
 <body>
+    <div style="width:100%;display:flex;justify-content:flex-end;margin-top:20px;">
+      <a href="{{ url_for('logout') }}" class="btn btn-danger" style="padding:8px 18px;border-radius:20px;text-decoration:none;color:white;font-weight:600;background:#dc3545;">Logout</a>
+    </div>
     <div class="container">
         <div class="header">
             <h1>📊 Sales Module</h1>
@@ -267,24 +270,24 @@
 
             <!-- Inventory Status Card -->
             <div class="card">
-                <span class="card-icon">📦</span>
-                <h2>Inventory Status</h2>
-                <p>Real-time inventory tracking and stock level monitoring to ensure optimal sales operations and order fulfillment.</p>
+                <span class="card-icon">🛠️</span>
+                <h2>Support</h2>
+                <p>Access support features, send requests to support, and track the status of your support tickets.</p>
                 <div style="margin: 15px 0;">
                     <div style="margin-bottom: 8px;">
                         <span class="status-indicator status-active"></span>
-                        <span>In Stock: 1,247 items</span>
+                        <span>Active Support Tickets: 8</span>
                     </div>
                     <div style="margin-bottom: 8px;">
                         <span class="status-indicator status-pending"></span>
-                        <span>Low Stock: 23 items</span>
+                        <span>Pending: 3 tickets</span>
                     </div>
                     <div>
-                        <span class="status-indicator" style="background-color: #f44336;"></span>
-                        <span>Out of Stock: 5 items</span>
+                        <span class="status-indicator status-review"></span>
+                        <span>Resolved: 15 tickets</span>
                     </div>
                 </div>
-                <button class="card-button" onclick="checkInventory()">Check Inventory</button>
+                <button class="card-button" onclick="goToSupport()">Go to Support</button>
             </div>
         </div>
     </div>
@@ -310,8 +313,8 @@
         window.location.href = '/manage-customers-sales';
     }
 
-    function checkInventory() {
-        window.location.href = '/inventory-status';
+    function goToSupport() {
+        window.location.href = '/support-sales';
     }
 </script>
 

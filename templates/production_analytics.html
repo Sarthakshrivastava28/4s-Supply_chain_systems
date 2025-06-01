@@ -92,7 +92,7 @@
             </div>
 
             <script>
-                const chartData = {{ chart_data | tojson }};
+                const chartData = JSON.parse('{{ chart_data | tojson | e }}');
                 const ctxBar = document.getElementById('itemsBarChart').getContext('2d');
                 const itemsBarChart = new Chart(ctxBar, {
                     type: 'bar',

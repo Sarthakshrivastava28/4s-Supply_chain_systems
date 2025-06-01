@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ title if title else "Support SLA Monitoring" }}</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #23243a;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+            padding: 38px 32px 32px 32px;
+            max-width: 900px;
+            width: 100%;
+            margin: 40px 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h2 {
+            color: #fff;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .header p {
+            color: #b0b0b0;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .table-container {
+            background-color: #23243a;
+            border-radius: 12px;
+            padding: 20px 0 0 0;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 10px;
+            background: #23243a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(90, 62, 200, 0.07);
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+        }
+        th {
+            background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+        }
+        tr {
+            transition: background 0.2s;
+        }
+        tr:nth-child(even) {
+            background: #292b3a;
+        }
+        tr:hover {
+            background: #35365a;
+        }
+        td {
+            border-bottom: 1px solid #35365a;
+            font-size: 1rem;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            background: #d50000;
+            color: #fff;
+        }
+        .alert-success-custom {
+            background-color: #1c2b20 !important;
+            color: #a7d7c5 !important;
+            border: 1px solid #2a3f30 !important;
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .flash-messages .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .flash-messages .alert-success { background-color: #00c853; border-color: #009624; color: #000; }
+        .flash-messages .alert-danger { background-color: #d50000; border-color: #b20000; color: #fff; }
+        .flash-messages .alert-info { background-color: #1e88e5; border-color: #007bff; color: #fff; }
+        .flash-messages .alert-warning { background-color: #ffd740; border-color: #ffab00; color: #000; }
+        .btn-back {
+            display: inline-block;
+            margin-top: 32px;
+            background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        }
+        .btn-back:hover {
+            background: linear-gradient(90deg, #764ba2 60%, #667eea 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
+        }
+        @media (max-width: 700px) {
+            .container {
+                padding: 16px 4px;
+            }
+            th, td {
+                padding: 10px 6px;
+                font-size: 0.97rem;
+            }
+            .header h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>{{ title }}</h2>
+            <p>Showing support requests with status "Send to Support" that are older than 48 hours.</p>
+        </div>
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {% if requests %}
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Hours Since Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                            <tr>
+                                <td>{{ req.id }}</td>
+                                <td>{{ req.title_display }}</td>
+                                <td><span class="badge">{{ req.status }}</span></td>
+                                <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M:%S') if req.created_at else 'N/A' }} UTC</td>
+                                <td>{{ req.hours_since_created }} hrs</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert-success-custom" role="alert">
+                No support requests are currently violating the SLA (older than 48 hours with status "Send to Support").
+            </div>
+        {% endif %}
+        <a href="{{ url_for('support_page') }}" class="btn-back">Back to Support Module</a>
+    </div>
+</body>
+</html> 

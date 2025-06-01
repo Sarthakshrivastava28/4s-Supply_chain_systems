@@ -1,86 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(to right, #7f00ff, #e100ff);
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #232526 0%, #414345 100%);
+        color: #e0e0e0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
 
-    h1 {
-      margin-top: 50px;
-      font-size: 3rem;
-    }
+      h1 {
+        margin-top: 50px;
+        font-size: 3rem;
+        color: #fff;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.18);
+      }
 
-    .card-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 40px;
-      width: 90%;
-      max-width: 1000px;
-    }
+      .card-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 28px;
+        padding: 40px;
+        width: 95%;
+        max-width: 1100px;
+      }
 
-    .card {
-      background-color: white;
-      color: #333;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      padding: 25px;
-      transition: transform 0.3s ease;
-      text-align: center;
-      text-decoration: none;
-    }
+      .card {
+        background: #23243a;
+        color: #e0e0e0;
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+        padding: 32px 18px 28px 18px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-align: center;
+        text-decoration: none;
+        border: 1.5px solid #35365a;
+        position: relative;
+        overflow: hidden;
+      }
 
-    .card:hover {
-      transform: scale(1.05);
-    }
+      .card:hover {
+        transform: translateY(-6px) scale(1.03);
+        box-shadow: 0 16px 40px rgba(44, 62, 80, 0.28);
+        border-color: #667eea;
+      }
 
-    .card h2 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-    }
+      .card h2 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: #fff;
+        letter-spacing: 0.5px;
+      }
 
-    .card p {
-      font-size: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <h1>👑 Admin Dashboard</h1>
-  <div class="card-container">
-    <a class="card" href="{{ url_for('dashboard') }}">
-      <h2>🏠 Dashboard</h2>
-      <p>Go back to the main user dashboard.</p>
-    </a>
-    <a class="card" href="{{ url_for('sales_page') }}">
-      <h2>📊 Sales</h2>
-      <p>Track orders, performance, and revenue.</p>
-    </a>
-    <a class="card" href="{{ url_for('warehouse_page') }}">
-      <h2>📦 Warehouse</h2>
-      <p>Manage inventory, stock levels, and movement.</p>
-    </a>
-    <a class="card" href="{{ url_for('production_page') }}">
-      <h2>🏭 Production</h2>
-      <p>Oversee production workflow and progress.</p>
-    </a>
-    <a class="card" href="{{ url_for('support_page') }}">
-      <h2>🛠️ Support</h2>
-      <p>Manage customer support and tickets.</p>
-    </a>
-    <a class="card" href="#">
-      <h2>📋 Logs</h2>
-      <p>View system activity and user action logs. (Coming Soon)</p>
-    </a>
-  </div>
-</body>
+      .card p {
+        font-size: 1rem;
+        color: #b0b0b0;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 18px 18px 0 0;
+      }
+
+      @media (max-width: 700px) {
+        .card-container {
+          padding: 10px;
+          gap: 14px;
+        }
+        h1 {
+          font-size: 2rem;
+        }
+        .card {
+          padding: 18px 6px 16px 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>👑 Admin Dashboard</h1>
+    <div class="card-container">
+      <a class="card" href="{{ url_for('all_tables') }}">
+        <h2>🏠 Dashboard</h2>
+        <p>Go back to the main user dashboard.</p>
+      </a>
+      <a class="card" href="{{ url_for('sales_page') }}">
+        <h2>📊 Sales</h2>
+        <p>Track orders, performance, and revenue.</p>
+      </a>
+      <a class="card" href="{{ url_for('warehouse_page') }}">
+        <h2>📦 Warehouse</h2>
+        <p>Manage inventory, stock levels, and movement.</p>
+      </a>
+      <a class="card" href="{{ url_for('production_page') }}">
+        <h2>🏭 Production</h2>
+        <p>Oversee production workflow and progress.</p>
+      </a>
+      <a class="card" href="{{ url_for('support_page') }}">
+        <h2>🛠️ Support</h2>
+        <p>Manage customer support and tickets.</p>
+      </a>
+    </div>
+  </body>
 </html>

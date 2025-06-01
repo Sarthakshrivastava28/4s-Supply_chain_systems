@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title or "Support Pending Requests" }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(76, 61, 255, 0.12);
+            padding: 36px 32px 32px 32px;
+            max-width: 950px;
+            width: 100%;
+            margin: 40px 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #5a3ec8;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        .header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 10px;
+            background: #fafaff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(90, 62, 200, 0.07);
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+        }
+        th {
+            background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+        }
+        tr {
+            transition: background 0.2s;
+        }
+        tr:nth-child(even) {
+            background: #f3f2fa;
+        }
+        tr:hover {
+            background: #e6e2fa;
+        }
+        td {
+            border-bottom: 1px solid #ece9f6;
+            font-size: 1rem;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 7px 18px;
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        }
+        .btn-resolve {
+            background: linear-gradient(90deg, #28a745 60%, #43e97b 100%);
+            color: #fff;
+        }
+        .btn-dispatch {
+            background: linear-gradient(90deg, #007bff 60%, #00c6ff 100%);
+            color: #fff;
+        }
+        .btn:hover {
+            opacity: 0.93;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
+        }
+        .flash {
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .flash-success {
+            background-color: #e6f9ed;
+            color: #1e7e34;
+        }
+        .flash-error {
+            background-color: #fbeaea;
+            color: #b71c1c;
+        }
+        @media (max-width: 700px) {
+            .container {
+                padding: 16px 4px;
+            }
+            th, td {
+                padding: 10px 6px;
+                font-size: 0.97rem;
+            }
+            .header h1 {
+                font-size: 1.3rem;
+            }
+        }
+        .btn-back {
+            display: inline-block;
+            margin-top: 32px;
+            background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        }
+        .btn-back:hover {
+            background: linear-gradient(90deg, #764ba2 60%, #667eea 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Pending Support Requests</h1>
+        <p>Manage and resolve all pending support requests efficiently.</p>
+    </div>
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% if requests %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.id }}</td>
+                <td>{{ req.customer.name if req.customer else 'N/A' }}</td>
+                <td>{{ req.item_name }}</td>
+                <td>{{ req.quantity }}</td>
+                <td>{{ req.status }}</td>
+                <td>{{ req.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td class="actions">
+                    <form action="{{ url_for('resolve_request', request_id=req.id) }}" method="POST" style="display:inline;">
+                        <button class="btn btn-resolve" type="submit">✔ Resolve</button>
+                    </form>
+                    <form action="{{ url_for('set_support_request_to_dispatch_ready', request_id=req.id) }}" method="POST" style="display:inline;">
+                        <button class="btn btn-dispatch" type="submit">🚚 Ready for Dispatch</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align:center;color:#888;font-size:1.1rem;margin-top:30px;">No pending support requests.</p>
+    {% endif %}
+    <a href="{{ url_for('support_page') }}" class="btn-back">Back to Support Module</a>
+</div>
+</body>
+</html>

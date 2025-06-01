@@ -277,18 +277,13 @@
             <label for="item_name">Item Name <span class="required">*</span></label>
             <select id="item_name" name="item_name" required>
                 <option value="">Select an item...</option>
-                <option value="Mouse">Mouse</option>
-                <option value="Printer">Printer</option>
-                <option value="Scanner">Scanner</option>
-                <option value="Webcam">Webcam</option>
-                <option value="Headset">Headset</option>
-                <option value="Cables">Cables</option>
-                <option value="Software License">Software License</option>
-                <option value="Laptop">Laptop</option>
-                <option value="Tablet">Tablet</option>
-                <option value="Docking Station">Docking Station</option>
-                <option value="Projector">Projector</option>
-                <option value="UPS">UPS</option>
+                {% if item_names %}
+                    {% for name in item_names %}
+                        <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>No items found in inventory</option>
+                {% endif %}
             </select>
         </div>
 

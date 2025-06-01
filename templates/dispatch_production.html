@@ -157,11 +157,11 @@
             <td>{{ req.status }}</td>
             <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') if req.created_at else 'N/A' }}</td>
             <td>
-              {% if req.status in ['New', 'Needs Production'] %}
+              {% if req.status == 'New' %}
                 {% if req.is_in_stock %}
                   <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
                     <input type="hidden" name="action" value="dispatch">
-                    <button type="submit" class="action-button dispatch">Ready to Dispatch</button>
+                    <button type="submit" class="action-button dispatch">Dispatch</button>
                   </form>
                 {% else %}
                   <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
@@ -169,6 +169,23 @@
                     <button type="submit" class="action-button send-to-prod">Send to Production</button>
                   </form>
                 {% endif %}
+              {% elif req.status == 'Needs Production' %}
+                {% if req.is_in_stock %}
+                  <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
+                    <input type="hidden" name="action" value="dispatch">
+                    <button type="submit" class="action-button dispatch">Dispatch (Stock Available)</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
+                    <input type="hidden" name="action" value="send_to_production">
+                    <button type="submit" class="action-button send-to-prod">Send to Production</button>
+                  </form>
+                {% endif %}
+              {% elif req.status == 'Ready for Dispatch' %}
+                <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
+                  <input type="hidden" name="action" value="dispatch">
+                  <button type="submit" class="action-button dispatch">Dispatch Item</button>
+                </form>
               {% else %}
                 <span>{{ req.status }}</span>
               {% endif %}
@@ -181,8 +198,8 @@
       <p class="info-box">No pending requests (New or Needs Production) to display.</p>
       {% endif %}
       <div class="info-box">
-        This table shows requests with status: <strong>New</strong> or <strong>Needs Production</strong>.
-        Actions are available based on stock levels.
+        This table shows requests with status: <strong>New, Needs Production, Ready for Dispatch, or Sent to Production</strong>.
+        Actions are primarily available for New or Needs Production statuses based on stock levels.
       </div>
     </div>
 

@@ -224,7 +224,7 @@
         .header h1 {
           font-size: 2.2rem;
         }
-        
+
         .header p {
           font-size: 1.1rem;
         }
@@ -245,8 +245,11 @@
       <div class="header">
         <h1>🏭 Production Module</h1>
         <p>Smart Supply Support System - Production Management Dashboard</p>
-        <div style="position: absolute; top: 20px; right: 20px;">
-          <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">
+        <div style="position: absolute; top: 20px; right: 20px">
+          <a
+            href="{{ url_for('logout') }}"
+            class="btn btn-outline-light btn-sm"
+          >
             <i class="fas fa-sign-out-alt"></i> Logout
           </a>
         </div>
@@ -261,7 +264,8 @@
               <h3 class="card-title">Live Inventory</h3>
               <p class="card-description">
                 Real-time inventory tracking with live updates on raw materials,
-                work-in-progress, and finished goods across all production lines.
+                work-in-progress, and finished goods across all production
+                lines.
               </p>
 
               <button class="production-btn" onclick="viewLiveInventory()">
@@ -302,30 +306,15 @@
             </div>
           </div>
 
-          <!-- Support Card -->
-          <div class="col-lg-4 col-md-6">
-            <div class="production-card">
-              <span class="card-icon">🎧</span>
-              <h3 class="card-title">Production Support</h3>
-              <p class="card-description">
-                24/7 production support system with maintenance requests,
-                technical assistance, and emergency response coordination.
-              </p>
-
-              <button class="production-btn" onclick="accessSupport()">
-                Access Support
-              </button>
-            </div>
-          </div>
-
           <!-- Analytics Card -->
           <div class="col-lg-4 col-md-6">
             <div class="production-card">
               <span class="card-icon">📊</span>
               <h3 class="card-title">Production Analytics</h3>
               <p class="card-description">
-                Comprehensive analytics dashboard with production KPIs, efficiency
-                metrics, quality control data, and predictive insights.
+                Comprehensive analytics dashboard with production KPIs,
+                efficiency metrics, quality control data, and predictive
+                insights.
               </p>
 
               <button class="production-btn" onclick="viewAnalytics()">
@@ -368,7 +357,7 @@
       // setInterval(updateTemperature, 5000);
 
       // Remove progress bar animation since dummy data is removed
-      window.addEventListener('load', function() {
+      window.addEventListener("load", function () {
         // Animation removed
       });
     </script>

@@ -84,10 +84,27 @@
         tr:hover {
             background-color: #2d2d2d;
         }
-        .status-new { background-color: #1e88e5; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
-        .status-needs-production { background-color: #ffd740; color: #000; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
-        .status-dispatched { background-color: #00c853; color: #000; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
-        .status-delayed { background-color: #d50000; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.9em;}
+        /* Default for all status spans, can be overridden by specific status classes */
+        span[class^="status-"] {
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: 500;
+            display: inline-block;
+            text-align: center;
+            min-width: 100px; /* Ensures badges have a somewhat uniform width */
+        }
+        .status-new { background-color: #1e88e5; color: white; }
+        .status-needs-production { background-color: #ffc107; color: #000; } /* Amber/Yellow */
+        .status-sent-to-production { background-color: #fd7e14; color: white; } /* Orange */
+        .status-ready-for-dispatch { background-color: #0dcaf0; color: #000; } /* Cyan/Teal */
+        .status-dispatched { background-color: #198754; color: white; } /* Darker Green */
+        .status-resolved { background-color: #20c997; color: white; } /* Lighter Green/Teal */
+        .status-delayed { background-color: #dc3545; color: white; } /* Red */
+        .status-cancelled { background-color: #6c757d; color: white; } /* Grey */
+        .status-on-hold { background-color: #adb5bd; color: #000; } /* Light Grey */
+        /* Add a fallback for any other status not explicitly defined */
+        .status-default { background-color: #495057; color: white; }
         .no-requests {
             text-align: center;
             padding: 40px;
@@ -134,7 +151,7 @@
             <select id="statusFilter" onchange="filterTable()">
                 <option value="">All Statuses</option>
                 <option value="New">New</option>
-                <option value="Needs Production">Needs Production</option>
+                <option value="Send to Production">Needs Production</option>
                 <option value="Dispatched">Dispatched</option>
                 <option value="Delayed">Delayed</option>
                 <!-- Add other statuses if any -->

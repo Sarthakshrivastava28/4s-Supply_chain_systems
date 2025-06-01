@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>403 Forbidden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: #23243a;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+      padding: 48px 32px 32px 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .svg-illustration {
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #ff5252;
+      letter-spacing: 1px;
+    }
+    p {
+      color: #b0b0b0;
+      font-size: 1.1rem;
+      margin-bottom: 32px;
+    }
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+    }
+    .btn {
+      background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+      margin-top: 8px;
+    }
+    .btn:hover {
+      background: linear-gradient(90deg, #764ba2 60%, #667eea 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="svg-illustration">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="56" fill="#2d2d3a" stroke="#667eea" stroke-width="4"/>
+        <rect x="35" y="50" width="50" height="30" rx="8" fill="#ff5252"/>
+        <rect x="50" y="65" width="20" height="6" rx="3" fill="#fff"/>
+        <circle cx="60" cy="60" r="8" fill="#fff"/>
+        <circle cx="60" cy="60" r="4" fill="#ff5252"/>
+        <path d="M60 40v10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M60 80v-10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>403</h1>
+    <p>Sorry, you don't have permission to access this page.<br>Please login or register to continue.</p>
+    <div class="btn-group">
+      <a href="{{ url_for('login') }}" class="btn">Login</a>
+      <a href="{{ url_for('register') }}" class="btn">Register</a>
+    </div>
+  </div>
+</body>
+</html> 

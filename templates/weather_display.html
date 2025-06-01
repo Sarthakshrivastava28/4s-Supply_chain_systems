@@ -88,21 +88,22 @@
             display: none; /* Hidden by default */
             margin-bottom: 20px;
         }
-        .back-button-container {
-            text-align: center;
-            margin-top: 30px;
+        .back-button {
+            text-align: right;
+            margin-bottom: 18px;
         }
         .back-button a {
-            background-color: #333;
+            background-color: #1e88e5;
             color: white;
             padding: 8px 16px;
             border-radius: 5px;
             text-decoration: none;
             font-size: 14px;
             transition: background-color 0.3s;
+            display: inline-block;
         }
         .back-button a:hover {
-            background-color: #444;
+            background-color: #1976d2;
         }
     </style>
 </head>
@@ -129,8 +130,8 @@
             <p><small><strong>Last Updated:</strong> <span id="timestamp"></span></small></p>
         </div>
         
-        <div class="back-button-container">
-             <a href="{{ url_for('dashboard') if current_user and current_user.is_authenticated else url_for('home') }}">← Back to Dashboard/Home</a>
+        <div class="back-button">
+            <a href="{{ url_for('warehouse_page') if current_user and current_user.is_authenticated else url_for('home') }}">← Back to Warehouse Module</a>
         </div>
     </div>
 
