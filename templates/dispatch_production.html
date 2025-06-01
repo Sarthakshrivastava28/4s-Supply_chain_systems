@@ -128,136 +128,67 @@
       <a href="{{ url_for('warehouse_dashboard') }}">← Back to Dashboard</a>
     </div>
     <div class="container">
-      <div class="row">
-        <!-- Stock Check Box -->
-        <div class="box">
-          <h3>Stock Check</h3>
-          <div class="form-group">
-            <label for="product_name">Product Name</label>
-            <select id="product_name" name="product_name" required>
-              <option value="">Select a product</option>
-              {% for item in inventory_items %}
-              <option value="{{ item.item_name }}" {% if selected_product == item.item_name %}selected{% endif %}>{{ item.item_name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="quantity">Quantity</label>
-            <input
-              type="number"
-              id="quantity"
-              name="quantity"
-              min="1"
-              value="{{ selected_quantity }}"
-              required
-            />
-          </div>
-          <button id="checkStockBtn">Check Stock</button>
-          <div class="stock-result" id="stockResult"></div>
-          <div class="info-box">
-            Select the product and quantity to check current stock availability.
-          </div>
-        </div>
-
-        <!-- Request Update Box -->
-        <div class="box">
-          <h3>Update Request</h3>
-          <form action="/update-status-by-customer-code" method="POST">
-            <div class="form-group">
-              <label for="customer_code">Customer Code</label>
-              <input
-                type="text"
-                id="customer_code"
-                name="customer_code"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="status">Status</label>
-              <select name="status" id="status" required>
-                <option value="New">New</option>
-                <option value="Needs Production">Needs Production</option>
-                <option value="Dispatched">Dispatched</option>
-                <option value="Delayed">Delayed</option>
-              </select>
-            </div>
-            <button type="submit">Update Status</button>
-          </form>
-          <div class="info-box">
-            This will update the request status and update the list below.
-          </div>
-        </div>
-      </div>
-
       <!-- Sales Orders Table -->
-      <h2>Sales Orders</h2>
+      <h2>Requests for Dispatch/Production</h2>
       {% if requests %}
       <table>
         <thead>
           <tr>
-            <th>#</th>
+            <th>Request ID</th>
             <th>Customer Code</th>
             <th>Product</th>
-            <th>Quantity</th>
+            <th>Qty. Requested</th>
+            <th>Current Stock</th>
             <th>Status</th>
+            <th>Created At</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {% for request in requests %}
+          {% for req in requests %}
           <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ request.customer_code }}</td>
-            <td>{{ request.item_name }}</td>
-            <td>{{ request.quantity }}</td>
-            <td>{{ request.status }}</td>
+            <td>{{ req.id }}</td>
+            <td>{{ req.customer_code }}</td>
+            <td>{{ req.item_name }}</td>
+            <td>{{ req.quantity }}</td>
+            <td>
+                Available: {{ req.current_stock }}
+            </td>
+            <td>{{ req.status }}</td>
+            <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') if req.created_at else 'N/A' }}</td>
+            <td>
+              {% if req.status in ['New', 'Needs Production'] %}
+                {% if req.is_in_stock %}
+                  <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
+                    <input type="hidden" name="action" value="dispatch">
+                    <button type="submit" class="action-button dispatch">Ready to Dispatch</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="{{ url_for('process_request_action', request_id=req.id) }}" style="display: inline;">
+                    <input type="hidden" name="action" value="send_to_production">
+                    <button type="submit" class="action-button send-to-prod">Send to Production</button>
+                  </form>
+                {% endif %}
+              {% else %}
+                <span>{{ req.status }}</span>
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
       {% else %}
-      <p class="info-box">No sales orders to display.</p>
+      <p class="info-box">No pending requests (New or Needs Production) to display.</p>
       {% endif %}
       <div class="info-box">
-        This table only shows requests with status: <strong>New</strong> and
-        <strong>Needs Production</strong>.
+        This table shows requests with status: <strong>New</strong> or <strong>Needs Production</strong>.
+        Actions are available based on stock levels.
       </div>
     </div>
 
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        const checkButton = document.getElementById('checkStockBtn');
-        const stockResult = document.getElementById('stockResult');
-        
-        if (checkButton) {
-          checkButton.addEventListener('click', async function() {
-            const product = document.querySelector("#product_name").value;
-            const quantity = parseInt(document.querySelector("#quantity").value);
-
-            if (!product || isNaN(quantity) || quantity <= 0) {
-              stockResult.innerText = "⚠️ Please enter a valid product and quantity.";
-              stockResult.className = 'stock-result error';
-              return;
-            }
-
-            try {
-              const response = await fetch("/check-stock", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ product_name: product, quantity: quantity }),
-              });
-
-              const result = await response.json();
-              stockResult.innerText = result.message;
-              stockResult.className = 'stock-result ' + (result.message.includes('✅') ? 'success' : 'error');
-            } catch (error) {
-              stockResult.innerText = "❌ Error checking stock. Please try again.";
-              stockResult.className = 'stock-result error';
-              console.error("Check stock error:", error);
-            }
-          });
-        }
+        console.log("Dispatch/Production page loaded.");
       });
     </script>
   </body>

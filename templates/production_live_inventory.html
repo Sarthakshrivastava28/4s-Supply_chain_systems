@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Inventory</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .back-button a {
+            background-color: #1e88e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #1976d2;
+        }
+        .table-container, .form-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background-color: #2d2d2d;
+            font-weight: bold;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #2d2d2d;
+        }
+        .form-container h2 {
+            margin-top: 0;
+            color: #fff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: #2d2d2d;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            background-color: #1e88e5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .form-group button:hover {
+            background-color: #1976d2;
+        }
+        .no-items {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .flash-message.success { background-color: #00e676; color: #000; }
+        .flash-message.error { background-color: #ff5252; color: #fff; }
+        .flash-message.info { background-color: #1e88e5; color: #fff; }
+
+        .status-in-stock { color: #69f0ae; font-weight: bold; }
+        .status-low-stock { color: #ffd740; font-weight: bold; }
+        .status-out-of-stock { color: #ff5252; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Inventory</h1>
+            <div class="back-button">
+                <!-- Assuming a general dashboard, adjust if needed -->
+                <a href="{{ url_for('production_page') }}">← Back to Production Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-container">
+            <h2>Current Stock</h2>
+            {% if inventory_items %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        {#<th>Unit</th>#}
+                        <th>Stock Status</th>
+                        <th>Last Updated</th>
+                        <th>Quick Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory_items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.item_name }}</td>
+                        <td>{{ item.stock_quantity }}</td>
+                        {#<td>{{ item.unit }}</td>#}
+                        <td>
+                            {% if item.stock_quantity == 0 %}
+                                <span class="status-out-of-stock">Out of Stock</span>
+                            {% elif item.stock_quantity <= item.low_stock_threshold %}
+                                <span class="status-low-stock">Low Stock</span>
+                            {% else %}
+                                <span class="status-in-stock">In Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.last_updated.strftime('%Y-%m-%d %H:%M') if item.last_updated else 'N/A' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('update_stock') }}" style="display: flex; align-items: center; gap: 5px;">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                <input type="number" name="quantity" placeholder="±Qty" style="width: 70px; padding: 6px; border-radius: 3px; border: 1px solid #333; background-color: #2d2d2d; color: #fff;" required>
+                                <button type="submit" style="padding: 6px 10px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer;">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-items">
+                <p>No items currently in inventory.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Stock Update Form REMOVED -->
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Live Inventory page loaded.");
+            // Add any specific JS for this page here
+        });
+    </script>
+</body>
+</html> 

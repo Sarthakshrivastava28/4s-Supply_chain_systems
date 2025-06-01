@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Production Requests</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .back-button a {
+            background-color: #1e88e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #1976d2;
+        }
+        .table-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background-color: #2d2d2d;
+            font-weight: bold;
+            color: #fff;
+        }
+        tr:hover {
+            background-color: #2d2d2d;
+        }
+        .priority-high { color: #ff5252; font-weight: bold; }
+        .priority-medium { color: #ffd740; font-weight: bold; }
+        .priority-low { color: #69f0ae; font-weight: bold; } /* Assuming Low is green here */
+        .status-needs-production { color: #ffd740; font-weight: bold; }
+
+        .no-requests {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .flash-message.success { background-color: #00e676; color: #000; }
+        .flash-message.error { background-color: #ff5252; color: #fff; }
+        .flash-message.info { background-color: #1e88e5; color: #fff; }
+
+        .action-button {
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        .ready-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        .ready-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Requests Awaiting Production</h1>
+            <div class="back-button">
+                <a href="{{ url_for('production_page') }}">← Back to Production Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Production Requests Table -->
+        <div class="table-container">
+            {% if production_requests %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Customer Code</th>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in production_requests %}
+                    <tr>
+                        <td>{{ req.id }}</td>
+                        <td>{{ req.customer_code }}</td>
+                        <td>{{ req.item_name }}</td>
+                        <td>{{ req.quantity }}</td>
+                        <td>
+                            <span class="priority-{{ req.priority|lower }}">{{ req.priority }}</span>
+                        </td>
+                        <td>
+                            <span class="status-needs-production">{{ req.status }}</span>
+                        </td>
+                        <td>{{ req.created_at.strftime('%Y-%m-%d %H:%M') if req.created_at else 'N/A' }}</td>
+                        <td>{{ req.description | default('No description') }}</td>
+                        <td>
+                            {% if req.status == 'Needs Production' %}
+                            <form method="POST" action="{{ url_for('mark_request_ready_for_dispatch', request_id=req.id) }}" style="display: inline;">
+                                <button type="submit" class="action-button ready-button">Mark Ready for Dispatch</button>
+                            </form>
+                            {% else %}
+                            <span>{{ req.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-requests">
+                <h2>No Requests Awaiting Production</h2>
+                <p>There are currently no requests with the status "Needs Production".</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        // Any specific JS for this page can go here
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Production Requests page loaded.");
+        });
+    </script>
+</body>
+</html>

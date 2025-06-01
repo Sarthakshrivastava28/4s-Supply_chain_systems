@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Temperature Check</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+            width: 100%;
+        }
+        .header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2em;
+        }
+        .back-button a {
+            background-color: #1e88e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .back-button a:hover {
+            background-color: #1976d2;
+        }
+        .temperature-display {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .temperature-display h2 {
+            margin-top: 0;
+            color: #1e88e5;
+            font-size: 1.8em;
+        }
+        .temperature-value {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #fff;
+        }
+        .temperature-status {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        .timestamp {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 10px;
+        }
+        .refresh-button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        .refresh-button:hover {
+            background-color: #0056b3;
+        }
+        .status-low {
+            color: #69f0ae; /* Light Green */
+        }
+        .status-moderate {
+            color: #ffd740; /* Yellow / Amber */
+        }
+        .status-high {
+            color: #ff5252; /* Red */
+        }
+         .loading-message, .error-message {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .error-message { color: #ff5252; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Factory Temperature Status</h1>
+            <div class="back-button">
+                <a href="{{ url_for('production_page') }}">← Back to Production Dashboard</a>
+            </div>
+        </div>
+
+        <div class="temperature-display">
+            <h2>Current Conditions</h2>
+            <div id="loading-message" class="loading-message">Loading temperature data...</div>
+            <div id="error-message" class="error-message" style="display:none;"></div>
+            <div id="temperature-data" style="display:none;">
+                <div id="temperature-value" class="temperature-value">-- °C</div>
+                <div id="temperature-status" class="temperature-status">--</div>
+                <div id="timestamp" class="timestamp">Last updated: --</div>
+            </div>
+            <button id="refresh-button" class="refresh-button">Refresh Data</button>
+        </div>
+    </div>
+
+    <script>
+        const tempValueElement = document.getElementById('temperature-value');
+        const tempStatusElement = document.getElementById('temperature-status');
+        const timestampElement = document.getElementById('timestamp');
+        const refreshButton = document.getElementById('refresh-button');
+        const loadingMessageElement = document.getElementById('loading-message');
+        const errorMessageElement = document.getElementById('error-message');
+        const tempDataElement = document.getElementById('temperature-data');
+
+        async function fetchTemperatureData() {
+            loadingMessageElement.style.display = 'block';
+            errorMessageElement.style.display = 'none';
+            tempDataElement.style.display = 'none';
+            refreshButton.disabled = true;
+
+            try {
+                const response = await fetch("{{ url_for('factory_temperature_status') }}");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                tempValueElement.textContent = `${data.temperature_celsius} °C`;
+                tempStatusElement.textContent = data.status;
+                
+                // Apply status color
+                tempStatusElement.className = 'temperature-status'; // Reset classes
+                if (data.status.includes('Low')) {
+                    tempStatusElement.classList.add('status-low');
+                } else if (data.status.includes('Moderate')) {
+                    tempStatusElement.classList.add('status-moderate');
+                } else if (data.status.includes('High')) {
+                    tempStatusElement.classList.add('status-high');
+                }
+
+                const date = new Date(data.timestamp);
+                timestampElement.textContent = `Last updated: ${date.toLocaleString()}`;
+                
+                loadingMessageElement.style.display = 'none';
+                tempDataElement.style.display = 'block';
+
+            } catch (error) {
+                console.error("Error fetching temperature data:", error);
+                loadingMessageElement.style.display = 'none';
+                errorMessageElement.textContent = `Failed to load temperature data: ${error.message}. Please try again.`;
+                errorMessageElement.style.display = 'block';
+            }
+            finally {
+                refreshButton.disabled = false;
+            }
+        }
+
+        refreshButton.addEventListener('click', fetchTemperatureData);
+
+        // Fetch data on initial page load
+        document.addEventListener('DOMContentLoaded', fetchTemperatureData);
+    </script>
+</body>
+</html> 
