@@ -2,95 +2,500 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Register - Supply Chain Management</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            min-height: 100vh;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 100px; height: 100px; left: 15%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 60px; height: 60px; left: 25%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 80px; height: 80px; left: 75%; animation-delay: 1s; }
+        .particle:nth-child(4) { width: 120px; height: 120px; left: 85%; animation-delay: 3s; }
+        .particle:nth-child(5) { width: 40px; height: 40px; left: 45%; animation-delay: 4s; }
+        .particle:nth-child(6) { width: 90px; height: 90px; left: 65%; animation-delay: 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            25% { transform: translateY(-40px) rotate(90deg); opacity: 0.8; }
+            50% { transform: translateY(20px) rotate(180deg); opacity: 0.4; }
+            75% { transform: translateY(-20px) rotate(270deg); opacity: 0.6; }
         }
 
         .form-container {
-            width: 400px;
-            background: #fff;
-            padding: 35px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 50px 45px;
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(50px) scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .brand-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .brand-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border-radius: 18px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            animation: pulse 2.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
         }
 
         h2 {
-            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 35px;
+            font-weight: 400;
+        }
+
+        .form-group {
+            position: relative;
             margin-bottom: 25px;
-            color: #333;
         }
 
         label {
             display: block;
-            margin-top: 15px;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
 
         input, select {
             width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #667eea;
+            color: white;
             padding: 10px;
-            margin-top: 6px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 15px;
-            transition: border-color 0.3s;
         }
 
         input:focus, select:focus {
-            border-color: #6a11cb;
-            outline: none;
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
-        button {
-            margin-top: 25px;
-            width: 100%;
-            padding: 12px;
-            background: #6a11cb;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            border: none;
+        .form-group:focus-within label {
             color: white;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s ease;
+            transform: translateY(-2px);
         }
 
-        button:hover {
-            background: linear-gradient(to right, #5a0eb1, #1e63e7);
+        .role-selector {
+            position: relative;
+        }
+
+        .role-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .register-btn:hover::before {
+            left: 100%;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .register-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+
+        .login-link a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .login-link a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .login-link a:hover::after {
+            width: 100%;
+        }
+
+        /* Password strength indicator */
+        .password-strength {
+            margin-top: 8px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .password-strength.visible {
+            opacity: 1;
+        }
+
+        .strength-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            width: 0%;
+        }
+
+        .strength-weak { background: #ff4757; width: 33%; }
+        .strength-medium { background: #ffa726; width: 66%; }
+        .strength-strong { background: #2ed573; width: 100%; }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .form-container {
+                margin: 20px;
+                padding: 40px 30px;
+            }
+            
+            h2 {
+                font-size: 1.9rem;
+            }
+            
+            .brand-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+        }
+
+        /* Loading state */
+        .register-btn.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .register-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Role icons */
+        .role-icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Create an Account</h2>
-        <form method="POST" action="{{ url_for('register') }}">
-            <label for="username">Username</label>
-            <input type="text" name="username" id="username" required>
-
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" required>
-
-            <label for="role">Select Role</label>
-            <select name="role" id="role" required>
-                <option value="admin">Admin</option>
-                <option value="sales">Sales</option>
-                <option value="warehouse">Warehouse</option>
-                <option value="production">Production</option>
-                <option value="support">Support</option>
-            </select>
-
-            <button type="submit">Register</button>
-        </form>
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
+
+    <div class="form-container">
+        <div class="brand-section">
+            <div class="brand-icon">SC</div>
+            <h2>Join Our Team</h2>
+            <p class="subtitle">Create your Supply Chain account</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password" placeholder="Create a strong password" required>
+                <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Select Your Role</label>
+                <div class="role-selector">
+                    <select name="role" id="role" required>
+                        <option value="">Choose your department...</option>
+                        <option value="admin">🔧 Admin - System Management</option>
+                        <option value="sales">💼 Sales - Customer Relations</option>
+                        <option value="warehouse">📦 Warehouse - Inventory Control</option>
+                        <option value="production">⚙️ Production - Manufacturing</option>
+                        <option value="support">🎧 Support - Customer Service</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn" id="registerBtn">
+                Create Account
+            </button>
+        </form>
+        
+        <div class="login-link">
+            Already have an account? <a href="{{ url_for('login') }}">Sign in here</a>
+        </div>
+    </div>
+
+    <script>
+        // Password strength checker
+        const passwordInput = document.getElementById('password');
+        const strengthIndicator = document.getElementById('passwordStrength');
+        const strengthBar = document.getElementById('strengthBar');
+
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strength = checkPasswordStrength(password);
+            
+            if (password.length > 0) {
+                strengthIndicator.classList.add('visible');
+                strengthBar.className = 'strength-bar ' + strength;
+            } else {
+                strengthIndicator.classList.remove('visible');
+            }
+        });
+
+        function checkPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[a-z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score <= 2) return 'strength-weak';
+            if (score <= 4) return 'strength-medium';
+            return 'strength-strong';
+        }
+
+        // Form submission with loading state
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            const btn = document.getElementById('registerBtn');
+            btn.classList.add('loading');
+            btn.textContent = '';
+        });
+
+        // Enhanced input interactions
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.closest('.form-group').style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.closest('.form-group').style.transform = 'scale(1)';
+            });
+        });
+
+        // Keyboard navigation enhancement
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const focusedElement = document.activeElement;
+                if (focusedElement.tagName === 'INPUT') {
+                    const form = focusedElement.closest('form');
+                    const inputs = Array.from(form.querySelectorAll('input, select'));
+                    const currentIndex = inputs.indexOf(focusedElement);
+                    
+                    if (currentIndex < inputs.length - 1) {
+                        e.preventDefault();
+                        inputs[currentIndex + 1].focus();
+                    }
+                }
+            }
+        });
+
+        // Username validation feedback
+        const usernameInput = document.getElementById('username');
+        usernameInput.addEventListener('input', function() {
+            const username = this.value;
+            if (username.length > 0 && username.length < 3) {
+                this.style.borderColor = 'rgba(255, 71, 87, 0.8)';
+            } else if (username.length >= 3) {
+                this.style.borderColor = 'rgba(46, 213, 115, 0.8)';
+            } else {
+                this.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }
+        });
+    </script>
 </body>
 </html>

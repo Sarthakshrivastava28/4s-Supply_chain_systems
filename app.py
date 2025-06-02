@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from models import db, User, Request,SupportTicket,Customer,Inventory,ProductionTask
+from models import db, User, Request,Customer,Inventory
 import requests
 import pandas as pd
 from io import BytesIO
@@ -289,7 +289,7 @@ def export_requests():
     requests_data = Request.query.all()
     data = [{
         'ID': r.id,
-        'Customer': r.customer_name,
+        'Customer Code': r.customer_code,
         'Item': r.item_name,
         'Quantity': r.quantity,
         'Priority': r.priority,
@@ -309,8 +309,10 @@ def export_requests():
 
 # ------------------ Sales Analytics Page ------------------
 @app.route('/sales-analytics')
+@login_required
 def analytics_sales():
-    requests = Request.query.all()
+    # Only fetch requests submitted by the current user
+    requests = Request.query.filter_by(submitted_by=current_user.id).all()
     total = len(requests)
     new_count = sum(1 for r in requests if r.status == "New")
     production_count = sum(1 for r in requests if r.status == "Needs Production")
@@ -333,26 +335,10 @@ def analytics_sales():
         dispatched_count=dispatched_count,
         status_data=status_data,
         priority_data=priority_data
-    ) 
+    )
 
-# ------------------ Mock Inventory API ------------------
-@app.route('/api/inventory', methods=['GET'])
-def get_inventory():
-    mock_inventory = {
-        "Mouse": {"stock": 85, "location": "Warehouse B"},
-        "Printer": {"stock": 15, "location": "Warehouse C"},
-        "Scanner": {"stock": 10, "location": "Warehouse A"},
-        "Webcam": {"stock": 50, "location": "Warehouse B"},
-        "Headset": {"stock": 70, "location": "Warehouse C"},
-        "Cables": {"stock": 300, "location": "Warehouse A"},
-        "Software License": {"stock": 200, "location": "Cloud Server"},
-        "Laptop": {"stock": 40, "location": "Warehouse D"},
-        "Tablet": {"stock": 30, "location": "Warehouse E"},
-        "Docking Station": {"stock": 25, "location": "Warehouse D"},
-        "Projector": {"stock": 12, "location": "Warehouse B"},
-        "UPS": {"stock": 18, "location": "Warehouse F"}
-    }
-    return jsonify(mock_inventory)
+
+
 
 # ------------------ Inventory Display Page ------------------
 @app.route('/manage-customers-sales', methods=['GET', 'POST'])
@@ -401,33 +387,6 @@ def add_customer():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ------------------ Warehouse Module ------------------
 
 @app.route('/view-requests-warehouse')
@@ -439,6 +398,55 @@ def view_requests_warehouse():
 
 
 
+
+
+# @app.route('/warehouse/process_request_action/<int:request_id>', methods=['POST'], endpoint='process_request_action')
+# @login_required
+# @role_required('admin', 'warehouse')
+# def process_request_action(request_id):
+#     req_to_process = Request.query.get_or_404(request_id)
+#     action = request.form.get('action')
+
+#     if not action:
+#         flash("No action specified.", "error")
+#         return redirect(url_for('dispatch_decision'))
+
+#     try:
+#         if action == 'dispatch':
+#             if req_to_process.status == "Dispatched":
+#                 flash(f"Request {req_to_process.id} is already Dispatched.", "info")
+#                 return redirect(url_for('dispatch_decision'))
+
+#             inventory_item = Inventory.query.filter_by(item_name=req_to_process.item_name).first()
+#             if not inventory_item:
+#                 flash(f"Inventory item '{req_to_process.item_name}' not found.", "error")
+#             elif inventory_item.stock_quantity < req_to_process.quantity:
+#                 flash(f"Not enough stock for '{req_to_process.item_name}'. Available: {inventory_item.stock_quantity}, Needed: {req_to_process.quantity}. Send to production instead.", "error")
+#             else:
+#                 inventory_item.stock_quantity -= req_to_process.quantity
+#                 inventory_item.last_updated = datetime.now(timezone.utc)
+#                 req_to_process.status = "Dispatched"
+#                 # Optionally, set a dispatched_at timestamp if your Request model has one
+#                 # req_to_process.dispatched_at = datetime.now(timezone.utc)
+#                 flash(f"Request {req_to_process.id} for '{req_to_process.item_name}' has been Dispatched. Inventory updated.", "success")
+        
+#         elif action == 'send_to_production':
+#             if req_to_process.status == "Needs Production":
+#                  flash(f"Request {req_to_process.id} is already marked as 'Needs Production'.", "info")
+#             else:
+#                 req_to_process.status = "Needs Production"
+#                 flash(f"Request {req_to_process.id} for '{req_to_process.item_name}' has been sent to Production.", "success")
+#         else:
+#             flash("Invalid action specified.", "error")
+
+#         db.session.commit()
+
+#     except Exception as e:
+#         db.session.rollback()
+#         flash(f"Error processing request: {str(e)}", "error")
+#         print(f"Error in process_request_action: {e}") # For server-side logging
+
+#     return redirect(url_for('dispatch_decision'))
 
 
 @app.route('/warehouse/process_request_action/<int:request_id>', methods=['POST'], endpoint='process_request_action')
@@ -467,21 +475,32 @@ def process_request_action(request_id):
                 inventory_item.stock_quantity -= req_to_process.quantity
                 inventory_item.last_updated = datetime.now(timezone.utc)
                 req_to_process.status = "Dispatched"
-                # Optionally, set a dispatched_at timestamp if your Request model has one
-                # req_to_process.dispatched_at = datetime.now(timezone.utc)
                 flash(f"Request {req_to_process.id} for '{req_to_process.item_name}' has been Dispatched. Inventory updated.", "success")
         
         elif action == 'send_to_production':
             if req_to_process.status == "Needs Production":
-                 flash(f"Request {req_to_process.id} is already marked as 'Needs Production'.", "info")
+                flash(f"Request {req_to_process.id} is already marked as 'Needs Production'.", "info")
             else:
                 req_to_process.status = "Needs Production"
                 flash(f"Request {req_to_process.id} for '{req_to_process.item_name}' has been sent to Production.", "success")
+        elif action == 'ready_for_dispatch':
+            if req_to_process.status == "Ready for Dispatch":
+                flash(f"Request {req_to_process.id} is already marked as 'Ready for Dispatch'.", "info")
+            else:
+                inventory_item = Inventory.query.filter_by(item_name=req_to_process.item_name).first()
+                if not inventory_item:
+                    flash(f"Inventory item '{req_to_process.item_name}' not found.", "error")
+                elif inventory_item.stock_quantity < req_to_process.quantity:
+                    flash(f"Not enough stock for '{req_to_process.item_name}'. Available: {inventory_item.stock_quantity}, Needed: {req_to_process.quantity}.", "error")
+                else:
+                    inventory_item.stock_quantity -= req_to_process.quantity
+                    inventory_item.last_updated = datetime.now(timezone.utc)
+                    req_to_process.status = "Ready for Dispatch"
+                    flash(f"Request {req_to_process.id} for '{req_to_process.item_name}' marked as 'Ready for Dispatch'. Inventory updated.", "success")
         else:
             flash("Invalid action specified.", "error")
 
         db.session.commit()
-
     except Exception as e:
         db.session.rollback()
         flash(f"Error processing request: {str(e)}", "error")
@@ -495,7 +514,7 @@ def process_request_action(request_id):
 @role_required('warehouse', 'admin')
 def dispatch_decision():
     # Fetch requests needing attention, including 'Ready for Dispatch' and 'Sent to Production'
-    statuses_to_include = ['New', 'Needs Production', 'Ready for Dispatch', 'Sent to Production']
+    statuses_to_include = ['New',  'Ready for Dispatch', 'Sent to Production']
     requests_to_process = Request.query.filter(Request.status.in_(statuses_to_include)).order_by(Request.created_at.asc()).all()
     inventory_items_list = Inventory.query.all()
     inventory_map = {item.item_name: item.stock_quantity for item in inventory_items_list}
@@ -795,37 +814,37 @@ def factory_temperature_status():
 
 
 
-@app.route('/production-analytics')
-@login_required
-# @role_required('production', 'admin') # Optional: Add role protection
-def production_analytics_page():
-    try:
-        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+# @app.route('/production-analytics')
+# @login_required
+# # @role_required('production', 'admin') # Optional: Add role protection
+# def production_analytics_page():
+#     try:
+#         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
 
-        # Query ProductionTask for items completed in the last hour
-        # Assuming 'Done' or 'Completed' signifies completion. Adjust if your status is different.
-        completed_tasks = db.session.query(
-            ProductionTask.item_name,
-            func.sum(ProductionTask.quantity).label('total_quantity')
-        ).filter(
-            ProductionTask.status.in_(['Done', 'Completed']), # Adjust status names if needed
-            ProductionTask.completed_at >= one_hour_ago
-        ).group_by(ProductionTask.item_name).all()
+#         # Query ProductionTask for items completed in the last hour
+#         # Assuming 'Done' or 'Completed' signifies completion. Adjust if your status is different.
+#         completed_tasks = db.session.query(
+#             ProductionTask.item_name,
+#             func.sum(ProductionTask.quantity).label('total_quantity')
+#         ).filter(
+#             ProductionTask.status.in_(['Done', 'Completed']), # Adjust status names if needed
+#             ProductionTask.completed_at >= one_hour_ago
+#         ).group_by(ProductionTask.item_name).all()
 
-        if completed_tasks:
-            labels = [task.item_name for task in completed_tasks]
-            quantities = [task.total_quantity for task in completed_tasks]
-            chart_data = {"labels": labels, "quantities": quantities}
-        else:
-            chart_data = None
-            flash("No production tasks completed in the last hour.", "info")
+#         if completed_tasks:
+#             labels = [task.item_name for task in completed_tasks]
+#             quantities = [task.total_quantity for task in completed_tasks]
+#             chart_data = {"labels": labels, "quantities": quantities}
+#         else:
+#             chart_data = None
+#             flash("No production tasks completed in the last hour.", "info")
 
-    except Exception as e:
-        flash(f"Error fetching production analytics: {str(e)}", "error")
-        print(f"Error in production_analytics_page: {e}") # For server-side logging
-        chart_data = None
+#     except Exception as e:
+#         flash(f"Error fetching production analytics: {str(e)}", "error")
+#         print(f"Error in production_analytics_page: {e}") # For server-side logging
+#         chart_data = None
 
-    return render_template('production_analytics.html', title="Production Analytics", chart_data=chart_data)
+#     return render_template('production_analytics.html', title="Production Analytics", chart_data=chart_data)
 
 
 
@@ -856,8 +875,9 @@ def production_analytics_page():
 @app.route('/pending-requests')
 @login_required
 def pending_requests():
-    # TODO: Replace with actual logic to fetch pending requests
-    return render_template('support_pending_requests.html')
+    # Show requests with status 'Sent to Support'
+    requests = Request.query.filter_by(status='Sent to Support').all()
+    return render_template('support_pending_requests.html', requests=requests)
 
 @app.route('/create-query')
 @login_required
@@ -870,6 +890,32 @@ def create_query():
 def support_sla_monitoring():
     # TODO: Display SLA metrics and alerts
     return render_template('support_sla_monitoring.html')
+
+@app.route('/resolve-request/<int:request_id>', methods=['POST'])
+@login_required
+@role_required('admin', 'support')
+def resolve_request(request_id):
+    req = Request.query.get_or_404(request_id)
+    if req.status == 'Resolved':
+        flash('Request is already resolved.', 'info')
+    else:
+        req.status = 'Resolved'
+        db.session.commit()
+        flash(f'Request {req.id} marked as Resolved.', 'success')
+    return redirect(url_for('pending_requests'))
+
+@app.route('/set-support-request-to-dispatch-ready/<int:request_id>', methods=['POST'])
+@login_required
+@role_required('admin', 'support')
+def set_support_request_to_dispatch_ready(request_id):
+    req = Request.query.get_or_404(request_id)
+    if req.status == 'Ready for Dispatch':
+        flash('Request is already marked as Ready for Dispatch.', 'info')
+    else:
+        req.status = 'Ready for Dispatch'
+        db.session.commit()
+        flash(f'Request {req.id} marked as Ready for Dispatch.', 'success')
+    return redirect(url_for('pending_requests'))
 
 
 
@@ -932,4 +978,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
 

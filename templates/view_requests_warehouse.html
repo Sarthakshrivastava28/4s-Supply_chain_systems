@@ -103,6 +103,7 @@
         .status-delayed { background-color: #dc3545; color: white; } /* Red */
         .status-cancelled { background-color: #6c757d; color: white; } /* Grey */
         .status-on-hold { background-color: #adb5bd; color: #000; } /* Light Grey */
+        .status-sent-to-support { background-color: #667eea; color: #fff; } /* Blue/Purple for Sent to Support */
         /* Add a fallback for any other status not explicitly defined */
         .status-default { background-color: #495057; color: white; }
         .no-requests {
@@ -151,10 +152,15 @@
             <select id="statusFilter" onchange="filterTable()">
                 <option value="">All Statuses</option>
                 <option value="New">New</option>
-                <option value="Send to Production">Needs Production</option>
+                <option value="Needs Production">Needs Production</option>
+                <option value="Sent to Production">Sent to Production</option>
+                <option value="Ready for Dispatch">Ready for Dispatch</option>
                 <option value="Dispatched">Dispatched</option>
+                <option value="Sent to Support">Sent to Support</option>
+                <option value="Resolved">Resolved</option>
                 <option value="Delayed">Delayed</option>
-                <!-- Add other statuses if any -->
+                <option value="Cancelled">Cancelled</option>
+                <option value="On Hold">On Hold</option>
             </select>
         </div>
 

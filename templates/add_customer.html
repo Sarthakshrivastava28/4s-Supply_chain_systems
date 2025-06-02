@@ -1,223 +1,448 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Add Customer</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #232526 0%, #414345 100%);
-      color: #e0e0e0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
-    }
-    .card {
-      background: #23243a;
-      padding: 32px 40px;
-      border-radius: 18px;
-      box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
-      max-width: 600px;
-      width: 100%;
-      margin-bottom: 40px;
-    }
-    h2, h3 {
-      text-align: center;
-      color: #fff;
-      letter-spacing: 1px;
-    }
-    .form-group {
-      margin-bottom: 18px;
-    }
-    .form-label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: #b0b0b0;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      font-size: 1em;
-      border: 2px solid #35365a;
-      background: #18192a;
-      color: #e0e0e0;
-      border-radius: 8px;
-      transition: border-color 0.3s, background 0.3s;
-    }
-    .form-group input:focus {
-      border-color: #6a11cb;
-      background: #23243a;
-      outline: none;
-    }
-    .submit-btn {
-      background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 12px;
-      font-size: 1em;
-      width: 100%;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.3s, box-shadow 0.3s;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
-    }
-    .submit-btn:hover {
-      background: linear-gradient(90deg, #764ba2 60%, #667eea 100%);
-      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
-    }
-    .flash {
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-weight: bold;
-      text-align: center;
-    }
-    .flash.success {
-      background-color: #1c2b20;
-      color: #a7d7c5;
-    }
-    .flash.danger {
-      background-color: #3a2323;
-      color: #ffb3b3;
-    }
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      margin-top: 20px;
-      background: #23243a;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(44, 62, 80, 0.12);
-    }
-    th, td {
-      padding: 12px 15px;
-      text-align: left;
-    }
-    th {
-      background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
-      color: #fff;
-      font-weight: 600;
-      border: none;
-    }
-    tr:nth-child(even) {
-      background: #292b3a;
-    }
-    tr:hover {
-      background: #35365a;
-    }
-    td {
-      border-bottom: 1px solid #35365a;
-      color: #e0e0e0;
-    }
-    .table-wrapper {
-      width: 100%;
-      max-width: 900px;
-    }
-    @media (max-width: 700px) {
-      .card {
-        padding: 18px 6px;
-      }
-      .table-wrapper {
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add Customer</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
         padding: 0;
       }
-      th, td {
-        padding: 8px 4px;
-        font-size: 0.97rem;
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: #2c3e50;
+        line-height: 1.6;
+        padding: 20px;
+        min-height: 100vh;
       }
-      h2, h3 {
-        font-size: 1.2rem;
+      
+      .header {
+        max-width: 1200px;
+        margin: 0 auto 30px auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 25px 0;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
       }
-    }
-  </style>
-</head>
-<body>
-  <div style="width:100%;display:flex;justify-content:flex-end;margin-bottom:18px;">
-    <a href="{{ url_for('sales_page') }}" style="background:linear-gradient(90deg,#667eea 60%,#764ba2 100%);color:#fff;padding:8px 22px;border-radius:25px;text-decoration:none;font-weight:600;font-size:1rem;transition:background 0.2s;">← Back to Dashboard</a>
-  </div>
-  <div class="card">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
+      
+      .header h1 {
+        color: #2c3e50;
+        font-size: 28px;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      .back-link {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+      
+      .back-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+      
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 30px;
+      }
+      
+      .form-section {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 35px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        height: fit-content;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
+      }
+      
+      .form-section:hover {
+        transform: translateY(-2px);
+      }
+      
+      .form-section h2 {
+        color: #2c3e50;
+        margin-bottom: 25px;
+        font-size: 22px;
+        font-weight: 600;
+        text-align: center;
+        position: relative;
+      }
+      
+      .form-section h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-radius: 2px;
+      }
+      
+      .form-group {
+        margin-bottom: 22px;
+        position: relative;
+      }
+      
+      .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #555;
+        font-size: 14px;
+      }
+      
+      .form-group input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e1e8ed;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+      }
+      
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: white;
+        transform: scale(1.02);
+      }
+      
+      .form-group input[readonly] {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        color: #6c757d;
+        cursor: not-allowed;
+      }
+      
+      .submit-btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 16px 24px;
+        font-size: 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        width: 100%;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        margin-top: 10px;
+      }
+      
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+      
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+      
+      .flash {
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        border-left: 4px solid;
+      }
+      
+      .flash.success {
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        color: #155724;
+        border-left-color: #28a745;
+      }
+      
+      .flash.danger {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        color: #721c24;
+        border-left-color: #dc3545;
+      }
+      
+      .table-section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
+      }
+      
+      .table-section:hover {
+        transform: translateY(-2px);
+      }
+      
+      .table-header {
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+      }
+      
+      .table-header h3 {
+        font-size: 20px;
+        font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      .table-container {
+        overflow-x: auto;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      th {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        color: #495057;
+        font-weight: 600;
+        padding: 15px 18px;
+        text-align: left;
+        border-bottom: 2px solid #dee2e6;
+        font-size: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      
+      td {
+        padding: 15px 18px;
+        border-bottom: 1px solid #f1f3f4;
+        font-size: 14px;
+        transition: background-color 0.2s ease;
+      }
+      
+      tbody tr:hover {
+        background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+        transform: scale(1.001);
+      }
+      
+      tbody tr:nth-child(even) {
+        background: rgba(248, 249, 250, 0.5);
+      }
+      
+      .empty-state {
+        padding: 60px 40px;
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+      }
+      
+      .empty-state::before {
+        content: "📝";
+        display: block;
+        font-size: 48px;
+        margin-bottom: 15px;
+      }
+      
+      /* Subtle animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .form-section,
+      .table-section {
+        animation: fadeIn 0.6s ease-out;
+      }
+      
+      .table-section {
+        animation-delay: 0.2s;
+      }
+      
+      @media (max-width: 900px) {
+        .container {
+          grid-template-columns: 1fr;
+          gap: 25px;
+        }
+        
+        .header {
+          flex-direction: column;
+          gap: 20px;
+          text-align: center;
+        }
+        
+        .form-section,
+        .table-section {
+          padding: 25px;
+        }
+        
+        .table-header {
+          padding: 20px 25px;
+        }
+        
+        th, td {
+          padding: 12px 15px;
+          font-size: 13px;
+        }
+        
+        .header h1 {
+          font-size: 24px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        body {
+          padding: 15px;
+        }
+        
+        .form-section,
+        .table-section {
+          padding: 20px;
+        }
+        
+        .form-group input {
+          padding: 12px 14px;
+        }
+        
+        .submit-btn {
+          padding: 14px 20px;
+        }
+        
+        th, td {
+          padding: 10px 12px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Customer Management</h1>
+      <a href="{{ url_for('sales_page') }}" class="back-link">← Back to Dashboard</a>
+    </div>
+    
+    <div class="container">
+      <div class="form-section">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
           <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    <h2>Add Customer</h2>
-    <form method="POST" action="{{ url_for('add_customer') }}" onsubmit="return validateForm();">
-      <div class="form-group">
-        <label for="name" class="form-label">Full Name *</label>
-        <input type="text" name="name" id="name" required maxlength="150">
+          {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+        <h2>Add New Customer</h2>
+        <form method="POST" action="{{ url_for('add_customer') }}" onsubmit="return validateForm();">
+          <div class="form-group">
+            <label for="name" class="form-label">Full Name *</label>
+            <input type="text" name="name" id="name" required maxlength="150" />
+          </div>
+          
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" name="email" id="email" maxlength="120" />
+          </div>
+          
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" name="phone" id="phone" maxlength="20" />
+          </div>
+          
+          <div class="form-group">
+            <label for="customer_code" class="form-label">Customer Code *</label>
+            <input type="text" name="customer_code" id="customer_code" readonly required />
+          </div>
+          
+          <button type="submit" class="submit-btn">Add Customer</button>
+        </form>
       </div>
-      <div class="form-group">
-        <label for="email" class="form-label">Email Address</label>
-        <input type="email" name="email" id="email" maxlength="120">
+      
+      <div class="table-section">
+        <div class="table-header">
+          <h3>Customer List</h3>
+        </div>
+        
+        <div class="table-container">
+          {% if customers %}
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Customer Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for customer in customers %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.email or '—' }}</td>
+                <td>{{ customer.phone or '—' }}</td>
+                <td>{{ customer.customer_code }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty-state">
+            No customers found. Add your first customer using the form.
+          </div>
+          {% endif %}
+        </div>
       </div>
-      <div class="form-group">
-        <label for="phone" class="form-label">Phone Number</label>
-        <input type="tel" name="phone" id="phone" maxlength="20">
-      </div>
-      <div class="form-group">
-        <label for="customer_code" class="form-label">Customer Code *</label>
-        <input type="text" name="customer_code" id="customer_code" readonly required>
-      </div>
-      <button type="submit" class="submit-btn">Save Customer</button>
-    </form>
-  </div>
-  <div class="table-wrapper">
-    <h3>Customer List</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Customer Code</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for customer in customers %}
-          <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ customer.name }}</td>
-            <td>{{ customer.email or '-' }}</td>
-            <td>{{ customer.phone or '-' }}</td>
-            <td>{{ customer.customer_code }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <script>
-    function generateCustomerCode() {
-      const prefix = "CUST";
-      const random = Math.floor(Math.random() * 90000) + 10000;
-      return prefix + random;
-    }
-    function validateForm() {
-      const name = document.getElementById('name').value.trim();
-      const customerCode = document.getElementById('customer_code').value.trim();
-      if (!name || !customerCode) {
-        alert('Name and Customer Code are required.');
-        return false;
+    </div>
+    
+    <script>
+      function generateCustomerCode() {
+        const prefix = 'CUST';
+        const random = Math.floor(Math.random() * 90000) + 10000;
+        return prefix + random;
       }
-      return true;
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      const codeField = document.getElementById('customer_code');
-      if (codeField && !codeField.value) {
-        codeField.value = generateCustomerCode();
+      
+      function validateForm() {
+        const name = document.getElementById('name').value.trim();
+        const customerCode = document.getElementById('customer_code').value.trim();
+        
+        if (!name || !customerCode) {
+          alert('Name and Customer Code are required.');
+          return false;
+        }
+        
+        return true;
       }
-    });
-  </script>
-</body>
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const codeField = document.getElementById('customer_code');
+        if (codeField && !codeField.value) {
+          codeField.value = generateCustomerCode();
+        }
+      });
+    </script>
+  </body>
 </html>
